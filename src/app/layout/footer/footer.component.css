@@ -1,0 +1,22 @@
+/* Animation pour le footer */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  footer{
+    background-color: rgba(206, 223, 250, 1) !important
+  }
+  
+  /* Effet de survol pour les liens */
+  .hover\:text-primary:hover {
+    color: #0d6efd !important; /* Couleur primaire de Bootstrap */
+  }

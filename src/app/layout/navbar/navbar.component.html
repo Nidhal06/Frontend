@@ -1,0 +1,94 @@
+<nav
+  class="navbar navbar-expand-lg navbar-light bg-light bg-opacity-80 shadow-sm py-3 border-bottom backdrop-blur-md fixed-top"
+  [ngClass]="{ scrolled: scrolled }"
+>
+  <div class="container">
+    <!-- Logo -->
+    <a routerLink="/" class="navbar-brand d-flex align-items-center gap-2">
+      <div class="h-8 w-8 rounded bg-primary text-white d-flex align-items-center justify-content-center">
+        <span class="fw-bold">CO</span>
+      </div>
+      <span class="fade-in">CoworkSpace</span>
+    </a>
+
+    <!-- Bouton de menu pour les écrans mobiles -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      (click)="toggleMenu()"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Contenu du Navbar -->
+    <div class="collapse navbar-collapse" id="navbarNav" [ngClass]="{ show: isOpen }">
+      <ul class="navbar-nav nav-links-container">
+        <!-- Liens de navigation avec icônes -->
+        <li class="nav-item">
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
+            <i class="bi bi-house-door"></i> Accueil
+          </a>
+        </li>    
+        <li class="nav-item">
+          <a routerLink="spaces" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-geo-alt-fill"></i> Espaces
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="events" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-calendar-event"></i> Événements
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="about" routerLinkActive="active" class="nav-link">
+            <i class="bi bi-info-circle"></i> À propos
+          </a>
+        </li>        
+      </ul>
+
+     <!-- Utilisateur connecté -->
+     <div class="d-flex align-items-center ms-auto">
+      <ng-container *ngIf="isLoggedIn; else notLoggedIn">
+        <div ngbDropdown class="dropdown">
+          <button 
+            class="btn btn-outline-primary dropdown-toggle d-flex align-items-center" 
+            id="dropdownMenuButton"
+            ngbDropdownToggle
+          >
+            <div class="avatar avatar-sm me-2">
+              <img *ngIf="profileImagePath" [src]="profileImagePath" alt="Profile" class="avatar-img rounded-circle">
+              <span *ngIf="!profileImagePath" class="avatar-text bg-primary-light text-primary rounded-circle">
+                {{ username?.charAt(0)?.toUpperCase() }}
+              </span>
+            </div>
+            <span class="d-none d-md-inline">{{ username }}</span>
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownMenuButton" class="dropdown-menu dropdown-menu-end">
+            <a ngbDropdownItem routerLink="/profile" class="dropdown-item">
+              <i class="bi bi-person me-2"></i> Mon profil
+            </a>
+            <a *ngIf="dashboardLink" ngbDropdownItem [routerLink]="dashboardLink" class="dropdown-item">
+              <i class="bi bi-speedometer2 me-2"></i> Tableau de bord
+            </a>
+            <div class="dropdown-divider"></div>
+            <button ngbDropdownItem class="dropdown-item text-danger" (click)="handleLogout()">
+              <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Template pour utilisateur non connecté -->
+      <ng-template #notLoggedIn>
+        <div class="d-flex gap-2">
+          <a routerLink="/signin" class="btn btn-outline-primary">Connexion</a>
+          <a routerLink="/signup" class="btn btn-primary">Inscription</a>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+</nav>

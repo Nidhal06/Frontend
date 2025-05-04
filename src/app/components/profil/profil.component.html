@@ -1,0 +1,174 @@
+<div class="container py-5">
+    <div class="row">
+      <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+          <div class="card-body text-center">
+            <div class="avatar-container mb-3">
+              <img [src]="previewUrl || 'assets/images/default-avatar.png'" 
+                   class="rounded-circle img-thumbnail" 
+                   alt="Image de profil"
+                   style="width: 150px; height: 150px; object-fit: cover;">
+              <div class="avatar-overlay" *ngIf="isEditing">
+                <label class="btn btn-primary btn-sm">
+                  <i class="bi bi-camera"></i> Changer
+                  <input type="file" (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+                </label>
+              </div>
+            </div>
+            
+            <h4 class="mb-1">{{ userProfile?.firstName }} {{ userProfile?.lastName }}</h4>
+            <p class="text-muted mb-3">{{ getUserTypeDisplayName(userProfile?.type) }}</p>
+            
+            <div *ngIf="selectedFile && isEditing" class="mb-3">
+              <button class="btn btn-success btn-sm me-2" (click)="uploadImage()" [disabled]="isLoading">
+                <i class="bi bi-check-circle"></i> Enregistrer
+              </button>
+              <button class="btn btn-outline-secondary btn-sm" (click)="selectedFile = null; previewUrl = userProfile?.profileImagePath ? (environment.apiUrl + userProfile.profileImagePath) : 'assets/images/default-avatar.png'">
+                <i class="bi bi-x-circle"></i> Annuler
+              </button>
+            </div>
+            
+            <div class="d-flex justify-content-center mb-3">
+              <button class="btn btn-outline-primary" (click)="toggleEdit()">
+                <i class="bi" [class.bi-pencil]="!isEditing" [class.bi-x]="isEditing"></i> 
+                {{ isEditing ? 'Annuler' : 'Modifier le profil' }}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Détails du compte</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <h6 class="text-muted mb-1">Nom d'utilisateur</h6>
+              <p>{{ userProfile?.username }}</p>
+            </div>
+            
+            <div class="mb-3">
+              <h6 class="text-muted mb-1">Email</h6>
+              <p>{{ userProfile?.email }}</p>
+            </div>
+            
+            <div class="mb-3">
+              <h6 class="text-muted mb-1">Type de compte</h6>
+              <p>{{ getUserTypeDisplayName(userProfile?.type) }}</p>
+            </div>
+            
+            <div *ngIf="userProfile?.roles?.length">
+              <h6 class="text-muted mb-1">Rôles</h6>
+              <div>
+                <span *ngFor="let role of userProfile.roles" class="badge bg-primary me-1 mb-1">
+                  {{ getRoleDisplayName(role) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Informations du profil</h5>
+            <span class="badge bg-light text-primary">{{ isEditing ? 'Modification' : 'Visualisation' }}</span>
+          </div>
+          
+          <div class="card-body">
+            <form [formGroup]="profileForm" *ngIf="userProfile">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="firstName" class="form-label">Prénom</label>
+                  <input type="text" class="form-control" id="firstName" formControlName="firstName"
+                         [class.is-invalid]="profileForm.get('firstName')?.invalid && (profileForm.get('firstName')?.dirty || profileForm.get('firstName')?.touched)">
+                  <div *ngIf="profileForm.get('firstName')?.invalid && (profileForm.get('firstName')?.dirty || profileForm.get('firstName')?.touched)" 
+                       class="invalid-feedback">
+                    Le prénom est requis
+                  </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <label for="lastName" class="form-label">Nom</label>
+                  <input type="text" class="form-control" id="lastName" formControlName="lastName"
+                         [class.is-invalid]="profileForm.get('lastName')?.invalid && (profileForm.get('lastName')?.dirty || profileForm.get('lastName')?.touched)">
+                  <div *ngIf="profileForm.get('lastName')?.invalid && (profileForm.get('lastName')?.dirty || profileForm.get('lastName')?.touched)" 
+                       class="invalid-feedback">
+                    Le nom est requis
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" formControlName="email"
+                       [class.is-invalid]="profileForm.get('email')?.invalid && (profileForm.get('email')?.dirty || profileForm.get('email')?.touched)">
+                <div *ngIf="profileForm.get('email')?.errors?.['required'] && (profileForm.get('email')?.dirty || profileForm.get('email')?.touched)" 
+                     class="invalid-feedback">
+                  L'email est requis
+                </div>
+                <div *ngIf="profileForm.get('email')?.errors?.['email'] && (profileForm.get('email')?.dirty || profileForm.get('email')?.touched)" 
+                     class="invalid-feedback">
+                  Veuillez entrer un email valide
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="phone" class="form-label">Téléphone</label>
+                <input type="tel" class="form-control" id="phone" formControlName="phone"
+                       [class.is-invalid]="profileForm.get('phone')?.invalid && (profileForm.get('phone')?.dirty || profileForm.get('phone')?.touched)">
+                <div *ngIf="profileForm.get('phone')?.errors?.['required'] && (profileForm.get('phone')?.dirty || profileForm.get('phone')?.touched)" 
+                     class="invalid-feedback">
+                  Le téléphone est requis
+                </div>
+                <div *ngIf="profileForm.get('phone')?.errors?.['pattern'] && (profileForm.get('phone')?.dirty || profileForm.get('phone')?.touched)" 
+                     class="invalid-feedback">
+                  Le téléphone doit contenir 8 chiffres
+                </div>
+              </div>
+              
+              <div class="d-flex justify-content-end mt-4">
+                <button type="button" class="btn btn-primary" (click)="saveProfile()" [disabled]="!profileForm.valid || isLoading" *ngIf="isEditing">
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1"></span>
+                  Enregistrer les modifications
+                </button>
+              </div>
+            </form>
+            
+            <div *ngIf="!userProfile" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sections supplémentaires selon le type d'utilisateur -->
+        <div class="card shadow-sm mt-4" *ngIf="userProfile?.type === 'ADMIN'">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Outils administrateur</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-grid gap-2">
+              <button class="btn btn-outline-primary" routerLink="/admin-dashboard">
+                <i class="bi bi-speedometer2 me-2"></i>Tableau de bord admin
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card shadow-sm mt-4" *ngIf="userProfile?.type === 'COWORKER'">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Mes réservations</h5>
+          </div>
+          <div class="card-body">
+            <p>Consultez et gérez vos réservations à venir.</p>
+            <button class="btn btn-outline-primary" routerLink="/my-bookings">
+              <i class="bi bi-calendar-week me-2"></i>Voir les réservations
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

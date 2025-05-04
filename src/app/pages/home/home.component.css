@@ -1,0 +1,21 @@
+/* Effet de flou pour les éléments décoratifs */
+.blur {
+    filter: blur(50px);
+  }
+  
+  
+  /* Animation pour les éléments */
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out forwards;
+  }
+  
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }

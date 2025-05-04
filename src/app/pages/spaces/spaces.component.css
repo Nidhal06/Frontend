@@ -1,0 +1,26 @@
+/* spaces.component.css */
+.page-transition {
+    animation: fadeIn 0.5s ease-in;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .card {
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .badge {
+    transition: all 0.2s ease;
+  }
+
+  .page-link {
+    cursor: pointer;
+    user-select: none;
+  }

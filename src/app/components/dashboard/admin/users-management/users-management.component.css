@@ -1,0 +1,142 @@
+/* Styles de base pour le Navbar */
+.navbar {
+  transition: all 0.3s ease-in-out;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  background-color: white;
+}
+
+/* Styles lorsque l'utilisateur fait défiler la page */
+.navbar.scrolled {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(12px);
+  background-color: rgba(206, 223, 250, 1) !important;
+}
+
+/* Conteneur des liens */
+.nav-links-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Style des liens */
+.nav-item {
+  list-style: none;
+}
+
+.nav-link {
+  font-size: 1rem;
+  font-weight: 500;
+  color: black;
+  text-decoration: none;
+  padding: 10px 15px;
+  position: relative;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espace entre l'icône et le texte */
+}
+
+/* Ligne sous chaque lien */
+.nav-link::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #007bff;
+  transition: width 0.3s ease;
+}
+
+/* Effet au survol */
+.nav-link:hover::before {
+  width: 100%;
+}
+
+/* Appliquer l'effet sur le lien actif */
+.nav-link.active::before {
+  width: 100%;
+}
+
+.nav-link:hover {
+  color: #007bff;
+}
+
+.nav-link.active {
+  color: #007bff;
+}
+
+/* Ajustements pour les icônes */
+.nav-link i {
+  font-size: 1.2rem;
+  color: #007bff;
+}
+
+/* Animation pour le logo */
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Ajustements pour le menu mobile */
+.navbar-collapse.show {
+  display: block !important;
+}
+
+
+
+/* Style personnalisé pour les badges de rôle */
+.bg-purple {
+    background-color: #6f42c1 !important;
+  }
+  
+  /* Animation pour les modales */
+  .modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: translate(0, -50px);
+  }
+  
+  .modal.show .modal-dialog {
+    transform: none;
+  }
+  
+  /* Style pour la table */
+  .table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+  
+  /* Style pour les boutons d'action */
+  .btn-outline-primary, .btn-outline-danger {
+    transition: all 0.2s;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: white;
+  }
+  
+  .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  /* Style pour le spinner de chargement */
+  .spinner-border {
+    width: 3rem;
+    height: 3rem;
+  }

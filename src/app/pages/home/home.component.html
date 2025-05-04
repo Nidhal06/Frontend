@@ -1,0 +1,339 @@
+<div class="page-transition">
+  <!-- Hero Section -->
+  <section class="pt-6 py-5 bg-light position-relative overflow-hidden">
+    <div class="container position-relative z-10">
+      <div class="row align-items-center"></div>
+    </div>
+    <div
+      class="position-absolute top-0 start-0 w-100 h-50 bg-primary bg-opacity-5 rounded-circle blur"
+    ></div>
+  </section>
+
+  <!-- Hero Section -->
+  <section class="pt-6 py-5 bg-light position-relative overflow-hidden">
+    <div class="container position-relative z-10">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <div class="mb-4">
+            <span
+              class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill"
+            >
+              Plateforme de coworking
+            </span>
+          </div>
+          <h1 class="display-4 fw-bold mb-4">
+            L'espace de travail <span class="text-primary">idéal</span> pour
+            votre succès
+          </h1>
+          <p class="lead text-muted mb-4">
+            Trouvez, réservez et gérez des espaces de coworking adaptés à vos
+            besoins. Une solution complète pour les freelances, startups et
+            entreprises.
+          </p>
+          <div class="d-flex flex-wrap gap-3 mb-4">
+            <button class="btn btn-primary btn-lg" routerLink="/spaces">
+              Découvrir les espaces
+              <i class="bi bi-chevron-right ms-2"></i>
+            </button>
+            <button class="btn btn-outline-primary btn-lg" routerLink="/about">
+              À propos de nous
+            </button>
+          </div>
+          <div class="d-flex align-items-center gap-3 text-muted">
+            <div class="d-flex">
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=64&q=80"
+                class="rounded-circle border-2 border-white me-n2"
+                style="width: 32px; height: 32px"
+                alt="User avatar"
+              />
+              <img
+                src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=64&q=80"
+                class="rounded-circle border-2 border-white me-n2"
+                style="width: 32px; height: 32px"
+                alt="User avatar"
+              />
+              <img
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=64&q=80"
+                class="rounded-circle border-2 border-white me-n2"
+                style="width: 32px; height: 32px"
+                alt="User avatar"
+              />
+            </div>
+            <p class="mb-0">
+              Rejoint par <span class="fw-bold">500+ professionnels</span> ce
+              mois-ci
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="position-relative">
+            <img
+              src="assets/images/a.jpg"
+              class="img-fluid rounded-3 shadow"
+              alt="Modern coworking space"
+            />
+            <div
+              class="position-absolute bottom-0 start-0 w-25 h-25 bg-primary bg-opacity-10 rounded-circle blur"
+            ></div>
+            <div
+              class="position-absolute top-0 end-0 w-50 h-50 bg-primary bg-opacity-10 rounded-circle blur"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="position-absolute bottom-25 end-0 w-75 h-75 bg-primary bg-opacity-5 rounded-circle blur"
+    ></div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-5 bg-white">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">
+          Tout ce dont vous avez besoin pour
+          <span class="text-primary">travailler efficacement</span>
+        </h2>
+        <p class="lead text-muted">
+          Nos espaces sont équipés pour répondre à tous vos besoins
+          professionnels et favoriser votre productivité.
+        </p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-4" *ngFor="let feature of features">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center mb-3">
+                <div
+                  class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3"
+                >
+                  <i [class]="feature.icon"></i>
+                </div>
+                <h3 class="h5 fw-bold mb-0">{{ feature.title }}</h3>
+              </div>
+              <p class="text-muted mb-0">{{ feature.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Spaces Section -->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-end mb-5"
+      >
+        <div class="mb-4 mb-md-0">
+          <h2 class="display-5 fw-bold mb-3">Espaces populaires</h2>
+          <p class="lead text-muted">
+            Découvrez nos espaces les plus appréciés, parfaitement aménagés pour
+            répondre à vos besoins professionnels.
+          </p>
+        </div>
+        <a routerLink="/spaces" class="btn btn-outline-primary">
+          Voir tous les espaces
+          <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-4" *ngFor="let space of featuredSpaces">
+          <div class="card h-100 border-0 shadow-sm">
+            <img
+              [src]="space.imageUrl"
+              class="card-img-top"
+              alt="{{ space.title }}"
+              style="height: 200px; object-fit: cover"
+            />
+            <div class="card-body">
+              <h3 class="h5 fw-bold mb-2">{{ space.title }}</h3>
+              <p class="text-muted mb-3">
+                {{ space.type }} - {{ space.location }}
+              </p>
+              <div
+                class="d-flex justify-content-between align-items-center mb-3"
+              >
+                <span
+                  class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill"
+                >
+                  {{ space.price | currency : "TND" : "symbol" : "1.2-2" }} /
+                  {{ space.priceUnit }}
+                </span>
+                <span class="text-muted">
+                  <i class="bi bi-people me-1"></i>
+                  {{ space.capacity }} pers.
+                </span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted">
+                  <i class="bi bi-star-fill text-warning me-1"></i>
+                  {{ space.rating }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    <!-- Featured Events Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-end mb-5">
+      <div class="mb-4 mb-md-0">
+        <h2 class="display-5 fw-bold mb-3">Événements à Venir</h2>
+        <p class="lead text-muted">
+          Participez à nos événements phares pour réseauter, apprendre et
+          développer votre activité.
+        </p>
+      </div>
+      <a routerLink="/events" class="btn btn-outline-primary">
+        Voir tous les événements
+        <i class="bi bi-arrow-right ms-2"></i>
+      </a>
+    </div>
+    
+    <!-- Loading State -->
+    <div *ngIf="!featuredEvents?.length" class="row g-4">
+      <div *ngFor="let item of [1,2,3]" class="col-md-6 col-lg-4">
+        <div class="card h-100 placeholder-glow">
+          <div class="card-img-top placeholder" style="height: 200px; background-color: #eee;"></div>
+          <div class="card-body">
+            <h5 class="card-title placeholder col-8 bg-secondary"></h5>
+            <p class="card-text placeholder col-10 bg-secondary"></p>
+            <p class="card-text placeholder col-6 bg-secondary"></p>
+            <div class="d-flex justify-content-between mt-3">
+              <span class="placeholder col-4 bg-secondary"></span>
+              <span class="placeholder col-3 bg-secondary"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Events Grid -->
+    <div class="row g-4" *ngIf="featuredEvents?.length">
+      <div class="col-md-6 col-lg-4" *ngFor="let event of featuredEvents">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h3 class="h5 fw-bold mb-0">{{ event.title }}</h3>
+              <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill">
+                {{ event.price === 0 ? 'Gratuit' : (event.price | currency:'TND':'symbol':'1.2-2') }}
+              </span>
+            </div>
+            
+            <p class="text-muted mb-3">
+              <i class="bi bi-calendar-event me-2"></i>
+              {{ event.startTime | date:'dd MMMM yyyy'}}<br>
+              <i class="bi bi-clock me-2"></i>
+              {{ event.startTime | date:'HH:mm' }} - {{ event.endTime | date:'HH:mm' }}<br>
+              <i class="bi bi-geo-alt me-2"></i>
+              {{ event.space?.name || 'Espace Coworking' }}
+            </p>
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                {{ event.participants?.length || 0 }} / {{ event.maxParticipants }} places
+              </span>
+            </div>
+            
+            <div class="progress mb-3" style="height: 6px;">
+              <div 
+                class="progress-bar bg-primary" 
+                role="progressbar" 
+                [style.width]="((event.participants?.length || 0) / event.maxParticipants * 100) + '%'"
+                [attr.aria-valuenow]="(event.participants?.length || 0)"
+                aria-valuemin="0"
+                [attr.aria-valuemax]="event.maxParticipants"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div *ngIf="featuredEvents && featuredEvents.length === 0" class="text-center py-5 bg-light rounded">
+      <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 3rem;"></i>
+      <h3 class="h4 fw-bold mb-2">Aucun événement à venir</h3>
+      <p class="text-muted mb-4">
+        Aucun événement n'est prévu pour le moment. Revenez plus tard !
+      </p>
+      <button class="btn btn-outline-primary" routerLink="/events">
+        Voir tous les événements
+      </button>
+    </div>
+  </div>
+</section>
+
+  <!-- Testimonials Section -->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">Ce que disent nos utilisateurs</h2>
+        <p class="lead text-muted">
+          Découvrez les expériences des professionnels qui utilisent nos espaces
+          de coworking au quotidien.
+        </p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-4" *ngFor="let testimonial of testimonials">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center mb-3">
+                <img
+                  [src]="testimonial.imageUrl"
+                  class="rounded-circle me-3"
+                  alt="{{ testimonial.name }}"
+                  style="width: 48px; height: 48px"
+                />
+                <div>
+                  <h4 class="h6 fw-bold mb-0">{{ testimonial.name }}</h4>
+                  <p class="text-muted mb-0">{{ testimonial.title }}</p>
+                </div>
+              </div>
+              <p class="text-muted mb-0">"{{ testimonial.content }}"</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-5 bg-primary text-white">
+    <div class="container">
+      <div class="text-center">
+        <h2 class="display-5 fw-bold mb-4">
+          Prêt à transformer votre façon de travailler ?
+        </h2>
+        <p class="lead text-white-80 mb-5">
+          Rejoignez des milliers de professionnels qui ont déjà optimisé leur
+          environnement de travail avec notre plateforme.
+        </p>
+        <div
+          class="d-flex flex-column flex-sm-row gap-3 justify-content-center"
+        >
+          <button class="btn btn-light btn-lg text-primary fw-bold" routerLink="/signup">
+            Créer un compte
+          </button>
+          <button class="btn btn-outline-light btn-lg" routerLink="/about">
+            Contacter l'équipe
+          </button>
+        </div>
+        <div
+          class="mt-4 d-flex flex-column flex-sm-row gap-4 justify-content-center text-white-80"
+        >
+          <div><i class="bi bi-check-circle me-2"></i>Configuration rapide</div>
+          <div><i class="bi bi-check-circle me-2"></i>Support 24/7</div>
+          <div><i class="bi bi-check-circle me-2"></i>Annulation gratuite</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

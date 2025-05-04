@@ -1,0 +1,91 @@
+<!-- spaces.component.html -->
+<!-- Hero Section -->
+<!-- spaces-home.component.html -->
+<section class="py-5 bg-light position-relative">
+  <div class="container position-relative z-3">
+    <div class="row justify-content-center text-center py-5">
+      <div class="col-lg-8">
+        <h1 class="display-4 fw-bold mb-4">
+          Choisissez votre type d'espace de travail
+        </h1>
+        <p class="lead text-muted mb-6">
+          Nous proposons des solutions flexibles adaptées à tous vos besoins professionnels.
+          Sélectionnez le type d'espace qui correspond le mieux à votre mode de travail.
+        </p>
+      </div>
+    </div>
+
+    <!-- Cards Section -->
+    <div class="row g-5 justify-content-center">
+      <!-- Espace Ouvert Card -->
+      <div class="col-lg-6">
+        <div class="card h-100 border-0 shadow-lg overflow-hidden">
+          <div class="row g-0 h-100">
+            <div class="col-md-6">
+              <img 
+                src="assets/images/open-space.jpg" 
+                class="img-fluid h-100 w-100 object-fit-cover" 
+                alt="Espace ouvert"
+              >
+            </div>
+            <div class="col-md-6 d-flex flex-column">
+              <div class="card-body">
+                <h2 class="card-title h3 fw-bold mb-3">Espace Ouvert</h2>
+                <p class="card-text text-muted mb-4">
+                  Un environnement dynamique et collaboratif parfait pour les freelances et les petites équipes.
+                  Profitez d'une atmosphère stimulante avec tous les équipements nécessaires.
+                </p>
+              </div>
+              <div class="card-footer bg-transparent border-0 mt-auto">
+                <button 
+                  class="btn btn-primary w-100 py-3" 
+                  routerLink="/open-spaces"
+                >
+                  Découvrir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Espace Privé Card -->
+      <div class="col-lg-6">
+        <div class="card h-100 border-0 shadow-lg overflow-hidden">
+          <div class="row g-0 h-100">
+            <div class="col-md-6">
+              <img 
+                src="assets/images/private-office.png" 
+                class="img-fluid h-100 w-100 object-fit-cover" 
+                alt="Espace privé"
+              >
+            </div>
+            <div class="col-md-6 d-flex flex-column">
+              <div class="card-body">
+                <h2 class="card-title h3 fw-bold mb-3">Espace Privé</h2>
+                <p class="card-text text-muted mb-4">
+                  Des bureaux privatifs pour les équipes qui ont besoin d'intimité et de concentration.
+                  Personnalisez votre espace selon vos besoins spécifiques.
+                </p>
+              </div>
+              <div class="card-footer bg-transparent border-0 mt-auto">
+                <button 
+                  class="btn btn-primary w-100 py-3" 
+                  routerLink="/private-spaces"
+                >
+                  Découvrir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Cercle blur réduit et positionné -->
+  <div
+    class="position-absolute top-0 start-50 translate-middle-x w-100 h-50 bg-primary bg-opacity-5 rounded-circle blur"
+  ></div>
+</section>
+
+

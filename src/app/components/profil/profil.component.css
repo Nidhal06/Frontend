@@ -1,0 +1,59 @@
+.avatar-container {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .avatar-overlay {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 5px;
+    border-radius: 0 0 75px 75px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  .avatar-container:hover .avatar-overlay {
+    opacity: 1;
+  }
+  
+  .card {
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-header {
+    border-bottom: none;
+  }
+  
+  .badge {
+    font-weight: 500;
+    padding: 5px 10px;
+  }
+  
+  .btn-outline-primary {
+    transition: all 0.3s;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: white;
+  }
+  
+  .invalid-feedback {
+    display: block;
+  }
+  
+  .form-control:disabled {
+    background-color: #f8f9fa;
+    opacity: 1;
+  }

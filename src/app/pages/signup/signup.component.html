@@ -1,0 +1,208 @@
+<div class="container-fluid register">
+  <div class="row g-0">
+    <!-- Colonne gauche -->
+    <div class="col-md-4 register-left d-flex flex-column justify-content-center">
+      <div class="text-center px-4">
+        <div class="mb-4">
+          <i class="bi bi-person-plus display-4 text-white"></i>
+          <h2 class="fw-bold text-white mt-3">Commencez l'aventure</h2>
+          <p class="text-white-50">Rejoignez notre communauté dès aujourd'hui.</p>
+        </div>
+        <button class="btn btn-light rounded-pill py-2 px-4 fw-bold" routerLink="/">
+          <i class="bi bi-arrow-left me-2"></i> Retour à l'accueil
+        </button>
+      </div>
+    </div>
+
+    <!-- Colonne droite -->
+    <div class="col-md-8 register-right">
+      <div class="h-100 d-flex flex-column justify-content-center">
+        <div class="px-5 py-4">
+          <!-- En-tête -->
+          <div class="text-center mb-5">
+            <h3 class="register-heading fw-bold text-primary">
+              <i class="bi bi-person-plus me-2"></i>Créer un compte
+            </h3>
+            <p class="text-muted">Remplissez le formulaire pour vous inscrire</p>
+          </div>
+
+          <!-- Formulaire -->
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="px-lg-5 mx-lg-3">
+            <!-- Ligne 1: Prénom et Nom -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <!-- Prénom -->
+                <div class="form-group">
+                  <label class="form-label fw-bold text-secondary mb-2">
+                    <i class="bi bi-person-fill me-2"></i>Prénom *
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control form-control-lg py-2"
+                    placeholder="Votre prénom"
+                    formControlName="firstName"
+                    [ngClass]="{ 'is-invalid': f['firstName'].touched && f['firstName'].errors }"
+                  >
+                  <div *ngIf="f['firstName'].touched && f['firstName'].errors" class="invalid-feedback d-block">
+                    <small><i class="bi bi-exclamation-circle-fill me-1"></i>
+                      <span *ngIf="f['firstName'].errors?.['required']">Ce champ est obligatoire</span>
+                      <span *ngIf="f['firstName'].errors?.['maxlength']">Maximum 100 caractères</span>
+                    </small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <!-- Nom -->
+                <div class="form-group">
+                  <label class="form-label fw-bold text-secondary mb-2">
+                    <i class="bi bi-person-fill me-2"></i>Nom *
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control form-control-lg py-2"
+                    placeholder="Votre nom"
+                    formControlName="lastName"
+                    [ngClass]="{ 'is-invalid': f['lastName'].touched && f['lastName'].errors }"
+                  >
+                  <div *ngIf="f['lastName'].touched && f['lastName'].errors" class="invalid-feedback d-block">
+                    <small><i class="bi bi-exclamation-circle-fill me-1"></i>
+                      <span *ngIf="f['lastName'].errors?.['required']">Ce champ est obligatoire</span>
+                      <span *ngIf="f['lastName'].errors?.['maxlength']">Maximum 100 caractères</span>
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ligne 2: Username et Type de compte -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <!-- Username -->
+                <div class="form-group">
+                  <label class="form-label fw-bold text-secondary mb-2">
+                    <i class="bi bi-person-badge me-2"></i>Nom d'utilisateur *
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control form-control-lg py-2"
+                    placeholder="Votre nom d'utilisateur"
+                    formControlName="username"
+                    [ngClass]="{ 'is-invalid': f['username'].touched && f['username'].errors }"
+                  >
+                  <div *ngIf="f['username'].touched && f['username'].errors" class="invalid-feedback d-block">
+                    <small><i class="bi bi-exclamation-circle-fill me-1"></i>
+                      <span *ngIf="f['username'].errors?.['required']">Ce champ est obligatoire</span>
+                      <span *ngIf="f['username'].errors?.['minlength']">Minimum 3 caractères</span>
+                      <span *ngIf="f['username'].errors?.['maxlength']">Maximum 20 caractères</span>
+                      <span *ngIf="f['username'].errors?.['pattern']">Caractères autorisés: lettres, chiffres, ., _, -</span>
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <!-- Téléphone -->
+                <div class="form-group">
+                  <label class="form-label fw-bold text-secondary mb-2">
+                    <i class="bi bi-telephone-fill me-2"></i>Téléphone *
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control form-control-lg py-2"
+                    placeholder="12345678"
+                    formControlName="phone"
+                    [ngClass]="{ 'is-invalid': f['phone'].touched && f['phone'].errors }"
+                  >
+                  <div *ngIf="f['phone'].touched && f['phone'].errors" class="invalid-feedback d-block">
+                    <small><i class="bi bi-exclamation-circle-fill me-1"></i>
+                      <span *ngIf="f['phone'].errors?.['required']">Ce champ est obligatoire</span>
+                      <span *ngIf="f['phone'].errors?.['minlength'] || f['phone'].errors?.['maxlength']">8 chiffres exactement</span>
+                      <span *ngIf="f['phone'].errors?.['pattern']">Uniquement des chiffres</span>
+                    </small>
+                  </div>
+                </div>
+              </div>           
+            </div>
+
+            <!-- Ligne 3: Email et Mot de Passe -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <!-- Email -->
+                <div class="form-group">
+                  <label class="form-label fw-bold text-secondary mb-2">
+                    <i class="bi bi-envelope-fill me-2"></i>Email *
+                  </label>
+                  <input
+                    type="email"
+                    class="form-control form-control-lg py-2"
+                    placeholder="exemple@email.com"
+                    formControlName="email"
+                    [ngClass]="{ 'is-invalid': f['email'].touched && f['email'].errors }"
+                  >
+                  <div *ngIf="f['email'].touched && f['email'].errors" class="invalid-feedback d-block">
+                    <small><i class="bi bi-exclamation-circle-fill me-1"></i>
+                      <span *ngIf="f['email'].errors?.['required']">Ce champ est obligatoire</span>
+                      <span *ngIf="f['email'].errors?.['email']">Format d'email invalide</span>
+                      <span *ngIf="f['email'].errors?.['maxlength']">Maximum 50 caractères</span>
+                    </small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                 <!-- Mot de passe -->
+                 <div class="form-group">
+                  <label class="form-label fw-bold text-secondary mb-2">
+                    <i class="bi bi-lock-fill me-2"></i>Mot de passe *
+                  </label>
+                  <div class="input-group">
+                    <input
+                      [type]="showPassword ? 'text' : 'password'"
+                      class="form-control form-control-lg py-2"
+                      placeholder="••••••••"
+                      formControlName="password"
+                      [ngClass]="{ 'is-invalid': f['password'].touched && f['password'].errors }"
+                    >
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      (click)="togglePasswordVisibility()"
+                    >
+                      <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+                    </button>
+                  </div>
+                  <div *ngIf="f['password'].touched && f['password'].errors" class="invalid-feedback d-block">
+                    <small><i class="bi bi-exclamation-circle-fill me-1"></i>
+                      <span *ngIf="f['password'].errors?.['required']">Ce champ est obligatoire</span>
+                      <span *ngIf="f['password'].errors?.['minlength']">Minimum 8 caractères</span>
+                      <span *ngIf="f['password'].errors?.['maxlength']">Maximum 120 caractères</span>
+                      <span *ngIf="f['password'].errors?.['pattern']">Doit contenir au moins une majuscule, une minuscule et un chiffre</span>
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bouton de soumission -->
+            <div class="d-grid mb-4">
+              <button type="submit" class="btn btn-primary btn-lg rounded-pill py-3 fw-bold" [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                <i class="bi bi-person-plus me-2"></i>
+                Créer mon compte
+              </button>
+            </div>
+
+            <!-- Lien de connexion -->
+            <div class="text-center mb-4">
+              <p class="text-muted">
+                Déjà un compte ?
+                <a routerLink="/signin" class="text-decoration-none fw-bold text-primary ms-1">
+                  Se connecter
+                </a>
+              </p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

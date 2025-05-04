@@ -1,0 +1,290 @@
+<div class="mt-5 pt-5">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light bg-opacity-80 shadow-sm py-3 border-bottom backdrop-blur-md fixed-top"
+  [ngClass]="{ scrolled: scrolled }">
+  <div class="container">
+    <!-- Logo -->
+    <a routerLink="/" class="navbar-brand d-flex align-items-center gap-2">
+      <div class="h-8 w-8 rounded bg-primary text-white d-flex align-items-center justify-content-center">
+        <span class="fw-bold">CO</span>
+      </div>
+      <span class="fade-in">CoworkSpace</span>
+    </a>
+
+    <!-- Bouton de menu pour les écrans mobiles -->
+    <button class="navbar-toggler" type="button" (click)="toggleMenu()" aria-controls="navbarNav" aria-expanded="false"
+      aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Utilisateur connecté -->
+    <div class="d-flex align-items-center ms-auto">
+      <ng-container *ngIf="isLoggedIn; else notLoggedIn">
+        <div ngbDropdown class="dropdown">
+          <button 
+            class="btn btn-outline-primary dropdown-toggle d-flex align-items-center" 
+            id="dropdownMenuButton"
+            ngbDropdownToggle
+          >
+          <div class="avatar avatar-sm me-2">
+            <img *ngIf="profileImagePath" [src]="profileImagePath" alt="Profile" class="avatar-img rounded-circle">
+            <span *ngIf="!profileImagePath" class="avatar-text bg-primary-light text-primary rounded-circle">
+              {{ username?.charAt(0)?.toUpperCase() }}
+            </span>
+          </div>
+          <span class="d-none d-md-inline">{{ username }}</span>
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dropdownMenuButton" class="dropdown-menu dropdown-menu-end">
+            <a ngbDropdownItem routerLink="/profile" class="dropdown-item">
+              <i class="bi bi-person me-2"></i> Mon profil
+            </a>
+            <a ngbDropdownItem routerLink="/admin-dashboard" class="dropdown-item">
+              <i class="bi bi-speedometer2 me-2"></i> Tableau de bord
+            </a>
+            <div class="dropdown-divider"></div>
+            <button ngbDropdownItem class="dropdown-item text-danger" (click)="handleLogout()">
+              <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Template pour utilisateur non connecté -->
+      <ng-template #notLoggedIn>
+        <div class="d-flex gap-2">
+          <a routerLink="/signin" class="btn btn-outline-primary">Connexion</a>
+          <a routerLink="/signup" class="btn btn-primary">Inscription</a>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</nav>
+
+<div class="admin-container bg-light">
+  <div class="container-fluid py-4">
+    <!-- Header avec titre et onglets -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h2 mb-0 text-primary">
+        <i class="bi bi-speedometer2 me-2"></i>Tableau de bord administrateur
+      </h1>
+      <div class="d-flex">
+        <button 
+          *ngFor="let tab of ['overview', 'revenue', 'users', 'occupancy']"
+          [class.btn-primary]="activeTab === tab"
+          [class.btn-outline-primary]="activeTab !== tab"
+          class="btn btn-sm ms-2"
+          (click)="changeTab(tab)"
+        >
+          {{ tab === 'overview' ? 'Aperçu' : 
+             tab === 'revenue' ? 'Revenus' : 
+             tab === 'users' ? 'Utilisateurs' : 'Occupation' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div *ngIf="activeTab === 'overview'">
+      <!-- Cartes de statistiques -->
+      <div class="row g-4 mb-4">
+        <div *ngFor="let stat of stats" class="col-md-6 col-xl-3">
+          <div class="card shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h6 class="text-muted mb-2">{{ stat.title }}</h6>
+                  <h3 class="mb-0">{{ stat.value }}</h3>
+                </div>
+                <span class="badge bg-light text-dark rounded-pill">
+                  <i [class]="'bi ' + (stat.trend === 'up' ? 'bi-arrow-up-circle text-success' : stat.trend === 'down' ? 'bi-arrow-down-circle text-danger' : 'bi-dash-circle text-secondary') + ' me-1'"></i>
+                  {{ stat.change }}
+                </span>
+              </div>
+              <p class="text-muted mb-0 small">{{ stat.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graphiques -->
+      <div class="row g-4 mb-4">
+        <!-- Graphique circulaire -->
+        <div class="col-lg-4">
+          <div class="card shadow-sm h-100">
+            <div class="card-header bg-white border-bottom">
+              <h5 class="mb-0">Répartition des abonnements</h5>
+            </div>
+            <div class="card-body">
+              <div style="height: 250px;">
+                <ngx-charts-pie-chart
+                  [results]="subscriptionData"
+                  [scheme]="colorScheme"
+                  [legend]="false"
+                  [labels]="true"
+                  [doughnut]="false"
+                  [arcWidth]="0.5">
+                </ngx-charts-pie-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Graphique à barres -->
+        <div class="col-lg-8">
+          <div class="card shadow-sm h-100">
+            <div class="card-header bg-white border-bottom">
+              <h5 class="mb-0">Revenus mensuels</h5>
+            </div>
+            <div class="card-body">
+              <div style="height: 250px;">
+                <ngx-charts-bar-vertical
+                  [results]="revenueBarData"
+                  [xAxis]="true"
+                  [yAxis]="true"
+                  [showXAxisLabel]="false"
+                  [showYAxisLabel]="false"
+                  [gradient]="false"
+                  [showDataLabel]="false">
+                  <ng-template #tooltipTemplate let-model="model">
+                    <div class="custom-tooltip">
+                      <div class="tooltip-header">{{ model.name }}</div>
+                      <div class="tooltip-value">
+                        <span class="tooltip-label">Revenu:</span>
+                        <span class="tooltip-number">{{ model.value | number }} €</span>
+                      </div>
+                    </div>
+                  </ng-template>
+                </ngx-charts-bar-vertical>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu de gestion -->
+      <div class="row g-4 mb-4">
+        <div *ngFor="let menu of managementMenus" class="col-md-6 col-lg-4">
+          <div class="card shadow-sm h-100 hover-shadow cursor-pointer" (click)="menu.onClick()">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">{{ menu.title }}</h5>
+                <i class="bi {{ menu.icon }} text-primary fs-4"></i>
+              </div>
+              <p class="text-muted small mb-0">{{ menu.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Utilisateurs récents -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Utilisateurs récents</h5>
+          <button class="btn btn-sm btn-outline-primary" (click)="router.navigate(['/admin-dashboard/users'])">
+            Voir tous <i class="bi bi-chevron-right ms-1"></i>
+          </button>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled">
+            <li *ngFor="let user of recentUsers" class="d-flex align-items-center mb-3">
+              <!-- Avatar -->
+              <div class="me-3">
+                <ng-container *ngIf="user.profileImagePath; else initials">
+                  <img 
+                    [src]="user.profileImagePath" 
+                    [alt]="user.username" 
+                    class="rounded-circle" 
+                    style="width: 40px; height: 40px; object-fit: cover;"
+                  >
+                </ng-container>
+                <ng-template #initials>
+                  <div 
+                    class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                    style="width: 40px; height: 40px; font-weight: bold;"
+                  >
+                    {{ user.username?.charAt(0)?.toUpperCase() }}
+                  </div>
+                </ng-template>
+              </div>
+              <!-- Infos utilisateur -->
+              <div>
+                <div class="fw-bold">{{ user.username }}</div>
+                <div class="text-muted small">{{ user.email }}</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>      
+    </div>
+
+    <!-- Onglet Revenus -->
+    <div *ngIf="activeTab === 'revenue'">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white border-bottom">
+          <h5 class="mb-0">Analyse des revenus</h5>
+        </div>
+        <div class="card-body">
+          <div style="height: 500px;">
+            <ngx-charts-line-chart
+              [results]="revenueLineData"
+              [xAxis]="true"
+              [yAxis]="true"
+              [showXAxisLabel]="false"
+              [showYAxisLabel]="false"
+              [autoScale]="true"
+              [tooltipDisabled]="false">
+              <ng-template #tooltipTemplate let-model="model">
+                <div class="custom-tooltip">
+                  <div class="tooltip-header">{{ model.name }}</div>
+                  <div class="tooltip-value">
+                    <span class="tooltip-label">Revenu:</span>
+                    <span class="tooltip-number">{{ model.value | number }} €</span>
+                  </div>
+                </div>
+              </ng-template>
+            </ngx-charts-line-chart>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglet Utilisateurs -->
+    <div *ngIf="activeTab === 'users'">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white border-bottom">
+          <h5 class="mb-0">Statistiques des utilisateurs</h5>
+        </div>
+        <div class="card-body">
+          <div style="height: 500px;">
+            <ngx-charts-pie-chart
+              [results]="userStatusData"
+              [scheme]="colorScheme"
+              [legend]="true"
+              [labels]="true">
+            </ngx-charts-pie-chart>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglet Occupation -->
+    <div *ngIf="activeTab === 'occupancy'">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white border-bottom">
+          <h5 class="mb-0">Taux d'occupation</h5>
+        </div>
+        <div class="card-body">
+          <div style="height: 500px;">
+            <ngx-charts-bar-vertical
+              [results]="occupancyData"
+              [xAxis]="true"
+              [yAxis]="true"
+              [showXAxisLabel]="false"
+              [showYAxisLabel]="false"
+              [yAxisLabel]="'Taux (%)'">
+            </ngx-charts-bar-vertical>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

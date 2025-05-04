@@ -1,0 +1,73 @@
+/* events.component.css */
+.page-transition {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.badge {
+  transition: all 0.2s ease;
+}
+  
+  .nav-tabs .nav-link {
+    color: #495057;
+    border: none;
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+  }
+  
+  .nav-tabs .nav-link.active {
+    color: #0d6efd;
+    border-bottom: 2px solid #0d6efd;
+    background-color: transparent;
+    font-weight: 500;
+  }
+  
+  .nav-tabs .nav-link:hover:not(.active) {
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  .bg-blue-soft {
+    background-color: rgb(102, 148, 218) !important;  /* Bleu clair */
+  }
+
+  /* Styles pour les boutons */
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Animation pour les boutons */
+.btn {
+  transition: all 0.3s ease;
+}
+
+/* Style pour les cartes */
+.card {
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}

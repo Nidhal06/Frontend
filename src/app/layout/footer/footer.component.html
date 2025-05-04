@@ -1,0 +1,88 @@
+<footer class="bg-light pt-16 pb-8 animate-fade-in">
+    <div class="container">
+      <div class="row g-4">
+        <!-- Informations de l'entreprise -->
+        <div class="col-md-6 col-lg-3">
+          <a routerLink="/" class="text-decoration-none d-flex align-items-center gap-2 mb-4">
+            <div class="h-8 w-8 rounded bg-primary text-white d-flex align-items-center justify-content-center">
+              <span class="fw-bold">CO</span>
+            </div>
+            <span class="text-dark fs-5 fw-bold">CoworkSpace</span>
+          </a>
+          <p class="text-muted">
+            Plateforme de gestion d'espaces de coworking dédiée aux entreprises, freelances et startups.
+          </p>
+          <div class="d-flex gap-3">
+            <a href="#" class="text-muted hover:text-primary">
+              <i class="bi bi-facebook"></i>
+            </a>
+            <a href="#" class="text-muted hover:text-primary">
+              <i class="bi bi-twitter"></i>
+            </a>
+            <a href="#" class="text-muted hover:text-primary">
+              <i class="bi bi-instagram"></i>
+            </a>
+            <a href="#" class="text-muted hover:text-primary">
+              <i class="bi bi-linkedin"></i>
+            </a>
+          </div>
+        </div>
+  
+        <!-- Liens rapides -->
+        <div class="col-md-6 col-lg-3">
+          <h3 class="h5 fw-bold mb-4">Liens Rapides</h3>
+          <ul class="list-unstyled">
+            <li><a routerLink="/" class="text-muted text-decoration-none hover:text-primary">Accueil</a></li>
+            <li><a routerLink="/spaces" class="text-muted text-decoration-none hover:text-primary">Espaces</a></li>
+            <li><a routerLink="/reservations" class="text-muted text-decoration-none hover:text-primary">Réservations</a></li>
+            <li><a routerLink="/dashboard" class="text-muted text-decoration-none hover:text-primary">Tableau de bord</a></li>
+            <li><a routerLink="/profile" class="text-muted text-decoration-none hover:text-primary">Mon profil</a></li>
+          </ul>
+        </div>
+  
+        <!-- Informations de contact -->
+        <div class="col-md-6 col-lg-3">
+          <h3 class="h5 fw-bold mb-4">Contact</h3>
+          <ul class="list-unstyled">
+            <li class="d-flex align-items-start gap-2 mb-3">
+              <i class="bi bi-geo-alt text-primary"></i>
+              <span class="text-muted">Boulevard cheikh zaid, Tunis, Tunisia</span>
+            </li>
+            <li class="d-flex align-items-start gap-2 mb-3">
+              <i class="bi bi-envelope text-primary"></i>
+              <span class="text-muted">level1hub1@gmail.com</span>
+            </li>
+            <li class="d-flex align-items-start gap-2 mb-3">
+              <i class="bi bi-telephone text-primary"></i>
+              <span class="text-muted">+216 70 037 520</span>
+            </li>
+          </ul>
+        </div>
+  
+        <!-- Newsletter -->
+        <div class="col-md-6 col-lg-3">
+          <h3 class="h5 fw-bold mb-4">Newsletter</h3>
+          <p class="text-muted">
+            Inscrivez-vous pour recevoir les dernières nouvelles et offres.
+          </p>
+          <div class="input-group mb-3">
+            <input type="email" class="form-control" placeholder="Votre email" aria-label="Votre email" />
+            <button class="btn btn-primary" type="button">S'inscrire</button>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Séparateur -->
+      <hr class="my-4" />
+  
+      <!-- Mentions légales -->
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center text-muted">
+        <div class="mb-3 mb-md-0">© {{ currentYear }} CoworkSpace. Tous droits réservés.</div>
+        <div class="d-flex gap-3">
+          <a href="#" class="text-muted text-decoration-none hover:text-primary">Mentions légales</a>
+          <a href="#" class="text-muted text-decoration-none hover:text-primary">Politique de confidentialité</a>
+          <a href="#" class="text-muted text-decoration-none hover:text-primary">CGU</a>
+        </div>
+      </div>
+    </div>
+  </footer>
