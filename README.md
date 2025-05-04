@@ -1,6 +1,7 @@
 # frontend
-Frontend For Coworking System
-________________________________Conception et Documentation du Système de Gestion d'Espaces Coworking____________________________________
+Frontend For Coworking Syste
+
+________________________________Conception et Documentation du Système de Gestion d'Espaces Coworking________________________________
 1. Administrateur (ADMIN)
 •	Gestion des utilisateurs (comptes, rôles, permissions).
 •	Gestion des espaces (Espace ouvert, Espace privé) et de leur disponibilité.
