@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # frontend
 Frontend For Coworking Syste
 
@@ -32,3 +33,7 @@ o	Suivi des impayés.
 o	Génération de facture après validation du paiement.
 o	Envoi de facture par email à l'utilisateur.
 •	Gestion de son profil (affichage, modification).
+=======
+# Frontend
+Frontend For Coworking System
+>>>>>>> a4ba644acbb399a21795337e784579e2eb493e11
