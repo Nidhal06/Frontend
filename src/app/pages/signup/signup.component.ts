@@ -1,30 +1,34 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { SignupRequest } from '../../types/entities';
 import { AuthService } from '../../services/auth.service';
-import { ToastService } from '../../services/toast.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-signup',
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css']
 })
-export class SignupComponent {
-  registerForm: FormGroup;
+export class SignupComponent implements OnInit {
+  registerForm!: FormGroup;
   showPassword = false;
   isLoading = false;
-  userTypes = [
-    { value: 'COWORKER', label: 'Coworker', description: 'Je cherche un espace de travail' },
-    { value: 'COMPANY', label: 'Entreprise', description: 'Je représente une entreprise' }
-  ];
+  submitted = false;
 
   constructor(
-    private fb: FormBuilder,
+    private formBuilder: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private toastService: ToastService
-  ) {
-    this.registerForm = this.fb.group({
+    private toastr: ToastrService
+  ) { }
+
+  ngOnInit(): void {
+    this.initializeForm();
+  }
+
+  initializeForm(): void {
+    this.registerForm = this.formBuilder.group({
       firstName: ['', [Validators.required, Validators.maxLength(100)]],
       lastName: ['', [Validators.required, Validators.maxLength(100)]],
       username: ['', [
@@ -33,7 +37,11 @@ export class SignupComponent {
         Validators.maxLength(20),
         Validators.pattern(/^[a-zA-Z0-9._-]+$/)
       ]],
-      email: ['', [Validators.required, Validators.email, Validators.maxLength(50)]],
+      email: ['', [
+        Validators.required,
+        Validators.email,
+        Validators.maxLength(50)
+      ]],
       phone: ['', [
         Validators.required,
         Validators.minLength(8),
@@ -44,48 +52,52 @@ export class SignupComponent {
         Validators.required,
         Validators.minLength(8),
         Validators.maxLength(120),
-        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/)
-      ]],
-      type: ['COWORKER', Validators.required]
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/)
+      ]]
     });
   }
 
+  // Convenience getter for easy access to form fields
   get f() { return this.registerForm.controls; }
 
-  togglePasswordVisibility() {
+  togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
 
-  onSubmit() {
+  onSubmit(): void {
+    this.submitted = true;
+
+    // Stop here if form is invalid
     if (this.registerForm.invalid) {
       return;
     }
-  
+
     this.isLoading = true;
-    
-    const userData = {
+
+    const signupRequest: SignupRequest = {
+      firstName: this.f['firstName'].value,
+      lastName: this.f['lastName'].value,
       username: this.f['username'].value,
       email: this.f['email'].value,
       password: this.f['password'].value,
-      firstName: this.f['firstName'].value,
-      lastName: this.f['lastName'].value,
-      phone: this.f['phone'].value,
-      type: this.f['type'].value
+      phone: this.f['phone'].value
     };
-  
-    this.authService.register(userData).subscribe({
+
+    this.authService.register(signupRequest).subscribe({
       next: () => {
         this.isLoading = false;
-        this.toastService.showSuccess('Inscription réussie !', 'Vous pouvez maintenant vous connecter');
-        this.registerForm.reset({ type: 'COWORKER' });
+        this.toastr.success('Inscription réussie', 'Bienvenue !');
         this.router.navigate(['/signin']);
       },
       error: (error) => {
         this.isLoading = false;
-        this.toastService.showError(
-          error || 'Erreur lors de l\'inscription',
-          'Veuillez corriger les erreurs'
-        );
+        console.error('Registration error:', error);
+        
+        if (error.error && error.error.message) {
+          this.toastr.error(error.error.message, 'Erreur d\'inscription');
+        } else {
+          this.toastr.error('Une erreur est survenue lors de l\'inscription', 'Erreur');
+        }
       }
     });
   }

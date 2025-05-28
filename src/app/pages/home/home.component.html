@@ -139,48 +139,49 @@
           <i class="bi bi-arrow-right ms-2"></i>
         </a>
       </div>
-      <div class="row g-4">
-        <div class="col-md-6 col-lg-4" *ngFor="let space of featuredSpaces">
-          <div class="card h-100 border-0 shadow-sm">
-            <img
-              [src]="space.imageUrl"
-              class="card-img-top"
-              alt="{{ space.title }}"
-              style="height: 200px; object-fit: cover"
-            />
-            <div class="card-body">
-              <h3 class="h5 fw-bold mb-2">{{ space.title }}</h3>
-              <p class="text-muted mb-3">
-                {{ space.type }} - {{ space.location }}
-              </p>
-              <div
-                class="d-flex justify-content-between align-items-center mb-3"
-              >
-                <span
-                  class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill"
-                >
-                  {{ space.price | currency : "TND" : "symbol" : "1.2-2" }} /
-                  {{ space.priceUnit }}
-                </span>
-                <span class="text-muted">
-                  <i class="bi bi-people me-1"></i>
-                  {{ space.capacity }} pers.
-                </span>
-              </div>
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted">
-                  <i class="bi bi-star-fill text-warning me-1"></i>
-                  {{ space.rating }}
-                </span>
-              </div>
-            </div>
-          </div>
+    
+<div class="row g-4">
+  <div class="col-md-6 col-lg-4" *ngFor="let space of featuredSpaces">
+    <div class="card h-100 border-0 shadow-sm">
+      <img
+        [src]="space.photoPrincipal"
+        class="card-img-top"
+        alt="{{ space.name }}"
+        style="height: 200px; object-fit: cover"
+      />
+      <div class="card-body">
+        <h3 class="h5 fw-bold mb-2">{{ space.name }}</h3>
+        <p class="text-muted mb-3">
+          {{ space.type === 'PRIVE' ? 'Espace Privé' : 'Espace Ouvert' }}
+        </p>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span *ngIf="isPrivateSpace(space)"
+            class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+            {{ space.prixParJour | currency : "TND" : "symbol" : "1.2-2" }} / jour
+          </span>
+          <span *ngIf="!isPrivateSpace(space)"
+            class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+            Accès libre
+          </span>
+          <span class="text-muted">
+            <i class="bi bi-people me-1"></i>
+            {{ space.capacity }} pers.
+          </span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-muted">
+            <i class="bi bi-star-fill text-warning me-1"></i>
+            {{ getSpaceRating(space.id || 0) }}
+          </span>
         </div>
       </div>
     </div>
+  </div>
+</div>
+    </div>
   </section>
 
-    <!-- Featured Events Section -->
+   <!-- Featured Events Section -->
 <section class="py-5 bg-white">
   <div class="container">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-end mb-5">
@@ -198,7 +199,7 @@
     </div>
     
     <!-- Loading State -->
-    <div *ngIf="!featuredEvents?.length" class="row g-4">
+    <div *ngIf="isLoading" class="row g-4">
       <div *ngFor="let item of [1,2,3]" class="col-md-6 col-lg-4">
         <div class="card h-100 placeholder-glow">
           <div class="card-img-top placeholder" style="height: 200px; background-color: #eee;"></div>
@@ -216,12 +217,12 @@
     </div>
     
     <!-- Events Grid -->
-    <div class="row g-4" *ngIf="featuredEvents?.length">
+    <div class="row g-4" *ngIf="!isLoading && featuredEvents?.length">
       <div class="col-md-6 col-lg-4" *ngFor="let event of featuredEvents">
         <div class="card h-100 border-0 shadow-sm">
           <div class="card-body d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-2">
-              <h3 class="h5 fw-bold mb-0">{{ event.title }}</h3>
+              <h3 class="h5 fw-bold mb-0">{{ event.titre }}</h3>
               <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill">
                 {{ event.price === 0 ? 'Gratuit' : (event.price | currency:'TND':'symbol':'1.2-2') }}
               </span>
@@ -229,28 +230,32 @@
             
             <p class="text-muted mb-3">
               <i class="bi bi-calendar-event me-2"></i>
-              {{ event.startTime | date:'dd MMMM yyyy'}}<br>
+              {{ formatDate(event.startDate) }}<br>
               <i class="bi bi-clock me-2"></i>
-              {{ event.startTime | date:'HH:mm' }} - {{ event.endTime | date:'HH:mm' }}<br>
+              {{ event.startDate | date:'HH:mm' }} - {{ event.endDate | date:'HH:mm' }}<br>
               <i class="bi bi-geo-alt me-2"></i>
-              {{ event.space?.name || 'Espace Coworking' }}
+              {{ event.espaceName || 'Espace Coworking' }}
             </p>
             
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
-                {{ event.participants?.length || 0 }} / {{ event.maxParticipants }} places
-              </span>
-            </div>
-            
-            <div class="progress mb-3" style="height: 6px;">
-              <div 
-                class="progress-bar bg-primary" 
-                role="progressbar" 
-                [style.width]="((event.participants?.length || 0) / event.maxParticipants * 100) + '%'"
-                [attr.aria-valuenow]="(event.participants?.length || 0)"
-                aria-valuemin="0"
-                [attr.aria-valuemax]="event.maxParticipants"
-              ></div>
+            <!-- Barre de progression corrigée -->
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="text-muted">Places disponibles</small>
+                <small class="text-muted">
+                  {{ event.participants?.length || 0 }}/{{ event.maxParticipants }}
+                </small>
+              </div>
+              <div class="progress" style="height: 8px">
+                <div
+                  class="progress-bar"
+                  [ngClass]="{
+                    'bg-primary': getProgressPercentage(event) < 80,
+                    'bg-warning': getProgressPercentage(event) >= 80 && getProgressPercentage(event) < 100,
+                    'bg-danger': getProgressPercentage(event) >= 100
+                  }"
+                  [style.width.%]="getProgressPercentage(event)"
+                ></div>
+              </div>
             </div>
           </div>
         </div>
@@ -258,7 +263,7 @@
     </div>
     
     <!-- Empty State -->
-    <div *ngIf="featuredEvents && featuredEvents.length === 0" class="text-center py-5 bg-light rounded">
+    <div *ngIf="!isLoading && featuredEvents && featuredEvents.length === 0" class="text-center py-5 bg-light rounded">
       <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 3rem;"></i>
       <h3 class="h4 fw-bold mb-2">Aucun événement à venir</h3>
       <p class="text-muted mb-4">

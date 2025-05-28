@@ -1,0 +1,128 @@
+<div class="mt-5 pt-5">
+  <nav
+    class="navbar navbar-expand-lg navbar-light bg-light bg-opacity-80 shadow-sm py-3 border-bottom backdrop-blur-md fixed-top"
+    [ngClass]="{ scrolled: scrolled }"
+  >
+    <div class="container">
+      <!-- Logo -->
+      <a routerLink="/" class="navbar-brand d-flex align-items-center gap-2">
+        <div
+          class="h-8 w-8 rounded bg-primary text-white d-flex align-items-center justify-content-center"
+        >
+          <span class="fw-bold">CO</span>
+        </div>
+        <span class="fade-in">CoworkSpace</span>
+      </a>
+
+      <!-- Bouton de menu pour les écrans mobiles -->
+      <button
+        class="navbar-toggler"
+        type="button"
+        (click)="toggleMenu()"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Utilisateur connecté -->
+      <div class="d-flex align-items-center ms-auto">
+        <ng-container *ngIf="isLoggedIn; else notLoggedIn">
+          <div ngbDropdown class="dropdown">
+            <button
+              class="btn btn-outline-primary dropdown-toggle d-flex align-items-center"
+              id="dropdownMenuButton"
+              ngbDropdownToggle
+            >
+              <div class="avatar avatar-sm me-2">
+                <img
+                  *ngIf="profileImagePath"
+                  [src]="environment.apiUrl + profileImagePath"
+                  alt="Profile"
+                  class="avatar-img rounded-circle"
+                />
+                <span
+                  *ngIf="!profileImagePath"
+                  class="avatar-text bg-primary-light text-primary rounded-circle"
+                >
+                  {{ username?.charAt(0)?.toUpperCase() || "A" }}
+                </span>
+              </div>
+              <span class="d-none d-md-inline">{{ username }}</span>
+            </button>
+            <div
+              ngbDropdownMenu
+              aria-labelledby="dropdownMenuButton"
+              class="dropdown-menu dropdown-menu-end"
+            >
+              <a ngbDropdownItem routerLink="/profile" class="dropdown-item">
+                <i class="bi bi-person me-2"></i> Mon profil
+              </a>
+              <a
+                ngbDropdownItem
+                routerLink="/admin-dashboard"
+                class="dropdown-item"
+              >
+                <i class="bi bi-speedometer2 me-2"></i> Tableau de bord
+              </a>
+              <div class="dropdown-divider"></div>
+              <button
+                ngbDropdownItem
+                class="dropdown-item text-danger"
+                (click)="handleLogout()"
+              >
+                <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+              </button>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #notLoggedIn>
+          <div class="d-flex gap-2">
+            <a routerLink="/signin" class="btn btn-outline-primary"
+              >Connexion</a
+            >
+            <a routerLink="/signup" class="btn btn-primary">Inscription</a>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </nav>
+
+  <div class="admin-container bg-light">
+    <div class="container-fluid py-4">
+      <!-- Header avec titre et onglets -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0 text-primary">
+          <i class="bi bi-speedometer2 me-2"></i>Tableau de bord coworker
+        </h1>
+      </div>
+
+      <!-- Contenu principal -->
+      <!-- Section de gestion -->
+<div *ngIf="activeTab === 'overview'">
+  <div class="row g-4 mb-4">
+    <div *ngFor="let menu of managementMenus" class="col-md-6 col-lg-6">
+      <div
+  class="card shadow-sm h-100 cursor-pointer management-card"
+  (click)="menu.onClick()"
+>
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">{{ menu.title }}</h5>
+      <i class="bi {{ menu.icon }} text-primary fs-4"></i>
+    </div>
+    <p class="text-muted small mb-0">{{ menu.description }}</p>
+  </div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+

@@ -4,35 +4,39 @@
       <i class="bi bi-arrow-left me-1"></i> Retour au tableau de bord
     </a>
   </div>
-  
+
   <!-- Header -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+  <div
+    class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4"
+  >
     <div class="mb-3 mb-md-0">
       <h1 class="h2 mb-2">Gestion des utilisateurs</h1>
-      <p class="mb-0 text-muted">Gérez tous les utilisateurs de la plateforme.</p>
+      <p class="mb-0 text-muted">
+        Gérez tous les utilisateurs de la plateforme.
+      </p>
     </div>
-    
+
     <div>
       <button class="btn btn-primary" (click)="openAddModal(addUserModal)">
         <i class="bi bi-person-plus me-1"></i> Nouvel utilisateur
       </button>
     </div>
   </div>
-  
+
   <!-- Search Bar -->
   <div class="mb-4">
     <div class="input-group">
       <span class="input-group-text"><i class="bi bi-search"></i></span>
-      <input 
-        type="text" 
-        class="form-control" 
-        placeholder="Rechercher un utilisateur..." 
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Rechercher un utilisateur..."
         [(ngModel)]="searchQuery"
         (input)="onSearchChange()"
-      >
+      />
     </div>
   </div>
-  
+
   <!-- User List -->
   <div class="card shadow-sm">
     <div class="card-header bg-white">
@@ -71,37 +75,94 @@
                 <tr *ngFor="let user of filteredUsers">
                   <td class="fw-semibold">{{ user.username }}</td>
                   <td>{{ user.email }}</td>
-                  <td><img src="https://flagcdn.com/tn.svg" width="20" alt="Tunisia Flag"> {{user.phone}}</td>
                   <td>
-                    <span class="badge rounded-pill" [ngClass]="getRoleBadgeClass(user.type)">
+                    <img
+                      src="https://flagcdn.com/tn.svg"
+                      width="20"
+                      alt="Tunisia Flag"
+                    />
+                    {{ user.phone }}
+                  </td>
+                  <td>
+                    <span
+                      class="badge rounded-pill"
+                      [ngClass]="getRoleBadgeClass(user.type)"
+                    >
                       {{ getRoleDisplayName(user.type) }}
                     </span>
                   </td>
                   <td>
-                    <span class="badge rounded-pill" [ngClass]="user.enabled ? 'bg-success' : 'bg-secondary'">
-                      {{ user.enabled ? 'Actif' : 'Inactif' }}
+                    <span
+                      class="badge rounded-pill"
+                      [ngClass]="user.enabled ? 'bg-success' : 'bg-secondary'"
+                    >
+                      {{ user.enabled ? "Actif" : "Inactif" }}
                     </span>
                   </td>
                   <td class="text-end">
                     <div class="d-flex justify-content-end gap-2">
-                      <button 
-                        class="btn btn-sm btn-outline-primary" 
+                      <button
+                        class="btn btn-sm btn-outline-primary"
                         (click)="openEditModal(editUserModal, user)"
                       >
                         <i class="bi bi-pencil"></i>
                       </button>
-                      <button 
-                        class="btn btn-sm btn-outline-danger" 
-                        (click)="deleteUser(user.id)"
+                      <!-- Modal de confirmation de suppression -->
+                      <ng-template #deleteModal let-modal>
+                        <div class="modal-header">
+                          <h5 class="modal-title">Confirmer la suppression</h5>
+                          <button
+                            type="button"
+                            class="btn-close"
+                            (click)="modal.dismiss()"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <p>
+                            Êtes-vous sûr de vouloir supprimer cet utilisateur ?
+                            Cette action est irréversible.
+                          </p>
+                        </div>
+                        <div class="modal-footer">
+                          <button
+                            type="button"
+                            class="btn btn-outline-secondary"
+                            (click)="modal.dismiss()"
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-danger"
+                            (click)="confirmDelete()"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      </ng-template>
+
+                      <!-- Bouton de suppression -->
+                      <button
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="user.id && openDeleteModal(user.id)"
                       >
                         <i class="bi bi-trash"></i>
                       </button>
-                      <button 
-                        class="btn btn-sm" 
-                        [ngClass]="user.enabled ? 'btn-outline-warning' : 'btn-outline-success'"
+                      <button
+                        class="btn btn-sm"
+                        [ngClass]="
+                          user.enabled
+                            ? 'btn-outline-warning'
+                            : 'btn-outline-success'
+                        "
                         (click)="toggleUserStatus(user)"
                       >
-                        <i class="bi" [ngClass]="user.enabled ? 'bi-person-x' : 'bi-person-check'"></i>
+                        <i
+                          class="bi"
+                          [ngClass]="
+                            user.enabled ? 'bi-person-x' : 'bi-person-check'
+                          "
+                        ></i>
                       </button>
                     </div>
                   </td>
@@ -125,61 +186,91 @@
     <form [formGroup]="userForm">
       <div class="mb-3">
         <label for="username" class="form-label">Nom d'utilisateur *</label>
-        <input 
-          type="text" 
-          class="form-control" 
-          id="username" 
+        <input
+          type="text"
+          class="form-control"
+          id="username"
           formControlName="username"
-          [ngClass]="{'is-invalid': userForm.get('username')?.invalid && userForm.get('username')?.touched}"
+          [ngClass]="{
+            'is-invalid':
+              userForm.get('username')?.invalid &&
+              userForm.get('username')?.touched
+          }"
+        />
+        <div
+          *ngIf="
+            userForm.get('username')?.invalid &&
+            userForm.get('username')?.touched
+          "
+          class="invalid-feedback"
         >
-        <div *ngIf="userForm.get('username')?.invalid && userForm.get('username')?.touched" class="invalid-feedback">
           Veuillez entrer un nom d'utilisateur
         </div>
       </div>
       <div class="mb-3">
         <label for="email" class="form-label">Email *</label>
-        <input 
-          type="email" 
-          class="form-control" 
-          id="email" 
+        <input
+          type="email"
+          class="form-control"
+          id="email"
           formControlName="email"
-          [ngClass]="{'is-invalid': userForm.get('email')?.invalid && userForm.get('email')?.touched}"
+          [ngClass]="{
+            'is-invalid':
+              userForm.get('email')?.invalid && userForm.get('email')?.touched
+          }"
+        />
+        <div
+          *ngIf="
+            userForm.get('email')?.invalid && userForm.get('email')?.touched
+          "
+          class="invalid-feedback"
         >
-        <div *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched" class="invalid-feedback">
-          <div *ngIf="userForm.get('email')?.errors?.['required']">Veuillez entrer un email</div>
-          <div *ngIf="userForm.get('email')?.errors?.['email']">Veuillez entrer un email valide</div>
+          <div *ngIf="userForm.get('email')?.errors?.['required']">
+            Veuillez entrer un email
+          </div>
+          <div *ngIf="userForm.get('email')?.errors?.['email']">
+            Veuillez entrer un email valide
+          </div>
         </div>
       </div>
       <div class="row">
         <div class="col-md-6 mb-3">
           <label for="firstName" class="form-label">Prénom</label>
-          <input 
-            type="text" 
-            class="form-control" 
-            id="firstName" 
+          <input
+            type="text"
+            class="form-control"
+            id="firstName"
             formControlName="firstName"
-          >
+          />
         </div>
         <div class="col-md-6 mb-3">
           <label for="lastName" class="form-label">Nom</label>
-          <input 
-            type="text" 
-            class="form-control" 
-            id="lastName" 
+          <input
+            type="text"
+            class="form-control"
+            id="lastName"
             formControlName="lastName"
-          >
+          />
         </div>
       </div>
       <div class="mb-3">
         <label for="phone" class="form-label">Téléphone</label>
-        <input 
-          type="text" 
-          class="form-control" 
-          id="phone" 
+        <input
+          type="text"
+          class="form-control"
+          id="phone"
           formControlName="phone"
-          [ngClass]="{'is-invalid': (userForm.get('phone')?.invalid && userForm.get('phone')?.touched)}"
+          [ngClass]="{
+            'is-invalid':
+              userForm.get('phone')?.invalid && userForm.get('phone')?.touched
+          }"
+        />
+        <div
+          *ngIf="
+            userForm.get('phone')?.invalid && userForm.get('phone')?.touched
+          "
+          class="invalid-feedback"
         >
-        <div *ngIf="userForm.get('phone')?.invalid && userForm.get('phone')?.touched" class="invalid-feedback">
           <div *ngIf="userForm.get('phone')?.errors?.['pattern']">
             Le numéro de téléphone doit contenir exactement 8 chiffres
           </div>
@@ -187,41 +278,57 @@
       </div>
       <div class="mb-3">
         <label for="type" class="form-label">Type *</label>
-        <select 
-          class="form-select" 
-          id="type" 
-          formControlName="type"
-        >
-          <option *ngFor="let role of roles" [value]="role.value">{{role.display}}</option>
+        <select class="form-select" id="type" formControlName="type">
+          <option *ngFor="let role of roles" [value]="role.value">
+            {{ role.display }}
+          </option>
         </select>
       </div>
       <div class="mb-3">
         <label for="password" class="form-label">Mot de passe *</label>
-        <input 
-          type="password" 
-          class="form-control" 
-          id="password" 
+        <input
+          type="password"
+          class="form-control"
+          id="password"
           formControlName="password"
-          [ngClass]="{'is-invalid': userForm.get('password')?.invalid && userForm.get('password')?.touched}"
+          [ngClass]="{
+            'is-invalid':
+              userForm.get('password')?.invalid &&
+              userForm.get('password')?.touched
+          }"
+        />
+        <div
+          *ngIf="
+            userForm.get('password')?.invalid &&
+            userForm.get('password')?.touched
+          "
+          class="invalid-feedback"
         >
-        <div *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched" class="invalid-feedback">
           Veuillez entrer un mot de passe
         </div>
       </div>
       <div class="mb-3 form-check">
-        <input 
-          type="checkbox" 
-          class="form-check-input" 
-          id="enabled" 
+        <input
+          type="checkbox"
+          class="form-check-input"
+          id="enabled"
           formControlName="enabled"
-        >
+        />
         <label class="form-check-label" for="enabled">Compte activé</label>
       </div>
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="addUser()">Ajouter</button>
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss()"
+    >
+      Annuler
+    </button>
+    <button type="button" class="btn btn-primary" (click)="addUser()">
+      Ajouter
+    </button>
   </div>
 </ng-template>
 
@@ -232,95 +339,125 @@
       <!-- Garder la validation seulement pour les champs requis -->
       <div class="mb-3">
         <label for="editUsername" class="form-label">Nom d'utilisateur *</label>
-        <input 
-          type="text" 
-          class="form-control" 
-          id="editUsername" 
+        <input
+          type="text"
+          class="form-control"
+          id="editUsername"
           formControlName="username"
-          [ngClass]="{'is-invalid': editForm.get('username')?.invalid && editForm.get('username')?.touched}"
+          [ngClass]="{
+            'is-invalid':
+              editForm.get('username')?.invalid &&
+              editForm.get('username')?.touched
+          }"
+        />
+        <div
+          *ngIf="
+            editForm.get('username')?.invalid &&
+            editForm.get('username')?.touched
+          "
+          class="invalid-feedback"
         >
-        <div *ngIf="editForm.get('username')?.invalid && editForm.get('username')?.touched" class="invalid-feedback">
           Veuillez entrer un nom d'utilisateur
         </div>
       </div>
       <div class="mb-3">
         <label for="editEmail" class="form-label">Email *</label>
-        <input 
-          type="email" 
-          class="form-control" 
-          id="editEmail" 
+        <input
+          type="email"
+          class="form-control"
+          id="editEmail"
           formControlName="email"
-          [ngClass]="{'is-invalid': editForm.get('email')?.invalid && editForm.get('email')?.touched}"
+          [ngClass]="{
+            'is-invalid':
+              editForm.get('email')?.invalid && editForm.get('email')?.touched
+          }"
+        />
+        <div
+          *ngIf="
+            editForm.get('email')?.invalid && editForm.get('email')?.touched
+          "
+          class="invalid-feedback"
         >
-        <div *ngIf="editForm.get('email')?.invalid && editForm.get('email')?.touched" class="invalid-feedback">
-          <div *ngIf="editForm.get('email')?.errors?.['required']">Veuillez entrer un email</div>
-          <div *ngIf="editForm.get('email')?.errors?.['email']">Veuillez entrer un email valide</div>
+          <div *ngIf="editForm.get('email')?.errors?.['required']">
+            Veuillez entrer un email
+          </div>
+          <div *ngIf="editForm.get('email')?.errors?.['email']">
+            Veuillez entrer un email valide
+          </div>
         </div>
       </div>
-      
+
       <!-- Les autres champs sans validation obligatoire -->
       <div class="row">
         <div class="col-md-6 mb-3">
           <label for="editFirstName" class="form-label">Prénom</label>
-          <input 
-            type="text" 
-            class="form-control" 
-            id="editFirstName" 
+          <input
+            type="text"
+            class="form-control"
+            id="editFirstName"
             formControlName="firstName"
-          >
+          />
         </div>
         <div class="col-md-6 mb-3">
           <label for="editLastName" class="form-label">Nom</label>
-          <input 
-            type="text" 
-            class="form-control" 
-            id="editLastName" 
+          <input
+            type="text"
+            class="form-control"
+            id="editLastName"
             formControlName="lastName"
-          >
+          />
         </div>
       </div>
       <div class="mb-3">
         <label for="editPhone" class="form-label">Téléphone</label>
-        <input 
-          type="text" 
-          class="form-control" 
-          id="editPhone" 
+        <input
+          type="text"
+          class="form-control"
+          id="editPhone"
           formControlName="phone"
-        >
+        />
       </div>
       <div class="mb-3">
         <label for="editType" class="form-label">Type *</label>
-        <select 
-          class="form-select" 
-          id="editType" 
-          formControlName="type"
-        >
-          <option *ngFor="let role of roles" [value]="role.value">{{role.display}}</option>
+        <select class="form-select" id="editType" formControlName="type">
+          <option *ngFor="let role of roles" [value]="role.value">
+            {{ role.display }}
+          </option>
         </select>
       </div>
       <div class="mb-3">
-        <label for="editPassword" class="form-label">Nouveau mot de passe</label>
-        <input 
-          type="password" 
-          class="form-control" 
-          id="editPassword" 
+        <label for="editPassword" class="form-label"
+          >Nouveau mot de passe</label
+        >
+        <input
+          type="password"
+          class="form-control"
+          id="editPassword"
           formControlName="password"
           placeholder="Laisser vide pour ne pas changer"
-        >
+        />
       </div>
       <div class="mb-3 form-check">
-        <input 
-          type="checkbox" 
-          class="form-check-input" 
-          id="editEnabled" 
+        <input
+          type="checkbox"
+          class="form-check-input"
+          id="editEnabled"
           formControlName="enabled"
-        >
+        />
         <label class="form-check-label" for="editEnabled">Compte activé</label>
       </div>
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="updateUser()">Enregistrer</button>
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss()"
+    >
+      Annuler
+    </button>
+    <button type="button" class="btn btn-primary" (click)="updateUser()">
+      Enregistrer
+    </button>
   </div>
 </ng-template>

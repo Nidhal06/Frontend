@@ -159,12 +159,13 @@
                     <div
                       class="d-flex justify-content-between align-items-start mb-2"
                     >
-                      <h3 class="h5 fw-bold mb-0">{{ event.title }}</h3>
+                      <h3 class="h5 fw-bold mb-0">{{ event.titre }}</h3>
                       <span class="badge bg-primary bg-opacity-10 text-primary">
                         {{
                           event.price === 0
                             ? "Gratuit"
-                            : (event.price | currency : "TND" : "symbol" : "1.2-2")
+                            : (event.price
+                              | currency : "TND" : "symbol" : "1.2-2")
                         }}
                       </span>
                     </div>
@@ -180,7 +181,7 @@
                       <div class="d-flex align-items-center mb-2">
                         <i class="bi bi-calendar-date text-muted me-2"></i>
                         <span class="text-muted">
-                          {{ formatDate(event.startTime) }}
+                          {{ formatDate(event.startDate) }}
                         </span>
                       </div>
 
@@ -188,19 +189,19 @@
                       <div class="d-flex align-items-center mb-2">
                         <i class="bi bi-clock text-muted me-2"></i>
                         <span class="text-muted">
-                          {{ formatTime(event.startTime) }} -
-                          {{ formatTime(event.endTime) }}
+                          {{ formatTime(event.startDate) }} -
+                          {{ formatTime(event.endDate) }}
                         </span>
                       </div>
 
                       <div class="d-flex align-items-center">
                         <i class="bi bi-geo-alt text-muted me-2"></i>
                         <span class="text-muted">
-                          {{ event.space?.name || "Espace Coworking" }}
+                          {{ event.espaceName || "Espace Coworking" }}
                         </span>
                       </div>
                     </div>
-
+                    
                     <!-- Barre de progression des inscriptions -->
                     <div class="mb-3">
                       <div
@@ -208,25 +209,31 @@
                       >
                         <small class="text-muted">Places disponibles</small>
                         <small class="text-muted">
-                          {{ event.participants?.length || 0 }}/{{
+                          {{ event.participants.length }}/{{
                             event.maxParticipants
                           }}
+                          <span
+                            *ngIf="event.isRegistered"
+                            class="badge bg-success ms-2"
+                            >Inscrit</span
+                          >
                         </small>
                       </div>
                       <div class="progress" style="height: 8px">
                         <div
-                          class="progress-bar bg-primary"
-                          [style.width]="
-                            ((event.participants?.length || 0) /
-                              event.maxParticipants) *
-                              100 +
-                            '%'
-                          "
+                          class="progress-bar"
                           [ngClass]="{
-                            'bg-success':
-                              (event.participants?.length || 0) >=
-                              event.maxParticipants * 0.8
+                            'bg-primary':
+                              event.participants.length <
+                              event.maxParticipants * 0.8,
+                            'bg-warning':
+                              event.participants.length >=
+                                event.maxParticipants * 0.8 &&
+                              event.participants.length < event.maxParticipants,
+                            'bg-danger':
+                              event.participants.length >= event.maxParticipants
                           }"
+                          [style.width.%]="getProgressPercentage(event)"
                         ></div>
                       </div>
                     </div>
@@ -245,69 +252,42 @@
                     </div>
 
                     <!-- Boutons d'action -->
-                    <div class="mt-auto">
-                      <!-- Bouton d'inscription -->
-                      <button
-                        class="btn w-100 mb-2"
-                        [ngClass]="{
-                          'btn-success': event.isRegistered,
-                          'btn-primary':
-                            !event.isRegistered &&
-                            event.participants.length < event.maxParticipants,
-                          'btn-secondary':
-                            !event.isRegistered &&
-                            event.participants.length >= event.maxParticipants
-                        }"
-                        [disabled]="
-                          !event.isRegistered &&
-                          event.participants.length >= event.maxParticipants
-                        "
-                        (click)="handleRegistration(event.id)"
-                        *ngIf="isAuthenticated"
-                      >
-                        <span *ngIf="event.isRegistered">
-                          <i class="bi bi-check-circle me-2"></i>Inscrit -
-                          Cliquer pour annuler
-                        </span>
-                        <span
-                          *ngIf="
-                            !event.isRegistered &&
-                            event.participants.length < event.maxParticipants
-                          "
-                        >
-                          <i class="bi bi-pencil-square me-2"></i>S'inscrire
-                        </span>
-                        <span
-                          *ngIf="
-                            !event.isRegistered &&
-                            event.participants.length >= event.maxParticipants
-                          "
-                        >
-                          <i class="bi bi-x-circle me-2"></i>Complet
-                        </span>
-                      </button>
+                    <!-- Boutons d'action -->
+<div class="mt-auto">
+  <!-- Bouton pour utilisateurs connectés -->
+  <ng-container *ngIf="isAuthenticated">
+    <button
+      class="btn w-100 mb-2"
+      [ngClass]="{
+        'btn-danger': event.isRegistered,
+        'btn-primary': !event.isRegistered && !event.isFull,
+        'btn-secondary': event.isFull
+      }"
+      [disabled]="event.isFull"
+      (click)="handleRegistration(event.id!)"
+    >
+      <span *ngIf="event.isRegistered">
+        <i class="bi bi-x-circle me-2"></i>Se désinscrire
+      </span>
+      <span *ngIf="!event.isRegistered && !event.isFull">
+        <i class="bi bi-pencil-square me-2"></i>S'inscrire
+      </span>
+      <span *ngIf="!event.isRegistered && event.isFull">
+        <i class="bi bi-x-circle me-2"></i>Complet
+      </span>
+    </button>
+  </ng-container>
 
-                      <!-- Bouton Inviter l'équipe -->
-                      <button
-                        *ngIf="isAuthenticated && hasCompanyRole()"
-                        class="btn btn-outline-primary w-100 mb-2"
-                        (click)="openTeamInviteDialog(event.id)"
-                      >
-                        <i class="bi bi-people-fill me-2"></i>
-                        Inviter l'équipe
-                      </button>
-
-                      <!-- Bouton pour les non-connectés -->
-                      <ng-container *ngIf="!isAuthenticated">
-                        <button
-                          class="btn btn-primary w-100"
-                          (click)="redirectToLogin()"
-                        >
-                          <i class="bi bi-box-arrow-in-right me-2"></i>
-                          Se connecter pour s'inscrire
-                        </button>
-                      </ng-container>
-                    </div>
+  <!-- Bouton pour utilisateurs non connectés -->
+  <button
+    *ngIf="!isAuthenticated"
+    class="btn btn-primary w-100"
+    (click)="redirectToLogin()"
+  >
+    <i class="bi bi-box-arrow-in-right me-2"></i>
+    Se connecter pour s'inscrire
+  </button>
+</div>
                   </div>
                 </div>
               </div>

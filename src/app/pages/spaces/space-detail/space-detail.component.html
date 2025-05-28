@@ -8,9 +8,7 @@
           <p class="lead text-muted mb-5">
             Découvrez tous les détails de notre espace de coworking : un lieu
             pensé pour favoriser la collaboration, la créativité et la
-            productivité. CoworkSpace vous propose un environnement moderne,
-            flexible et parfaitement adapté aux exigences des professionnels
-            d'aujourd'hui.
+            productivité.
           </p>
           <div class="d-flex gap-3 justify-content-center">
             <button class="btn btn-primary btn-lg" routerLink="/spaces">
@@ -50,12 +48,8 @@
             <h1 class="display-5 fw-bold">{{ space.name }}</h1>
             <div class="d-flex align-items-center gap-3 mb-3">
               <span class="badge bg-primary bg-opacity-10 text-primary">
-                {{ space.pricePerHour | currency : "TND" : "symbol" : "1.2-2" }}
-                /h
-              </span>
-              <span class="badge bg-primary bg-opacity-10 text-primary">
-                {{ space.pricePerDay | currency : "TND" : "symbol" : "1.2-2" }}
-                /j
+                {{ space.prixParJour | currency : "TND" : "symbol" : "1.2-2" }}
+                /jour
               </span>
               <span class="text-muted">
                 <i class="bi bi-people me-1"></i>
@@ -77,7 +71,7 @@
         <!-- Main Image -->
         <div class="mb-3">
           <img
-            [src]="space.photo"
+            [src]="space.photoPrincipal"
             class="img-fluid rounded-3 w-100"
             style="max-height: 400px; object-fit: cover"
             alt="{{ space.name }}"
@@ -88,15 +82,42 @@
         <!-- Gallery Thumbnails -->
         <div *ngIf="space.gallery?.length" class="mb-4">
           <div class="d-flex overflow-auto pb-2" style="scrollbar-width: thin">
-            <div *ngFor="let image of space.gallery" class="flex-shrink-0 me-2">
+            <div
+              *ngFor="let image of space.gallery; let i = index"
+              class="flex-shrink-0 me-2"
+            >
               <img
                 [src]="image"
                 class="rounded-2 cursor-pointer"
                 style="height: 80px; width: 120px; object-fit: cover"
                 alt="Galerie {{ space.name }}"
-                (click)="openImage(image)"
+                (click)="openImage(i)"
               />
             </div>
+          </div>
+        </div>
+
+        <!-- Lightbox Modal -->
+        <div
+          *ngIf="showLightbox"
+          class="lightbox-overlay"
+          (click)="closeLightbox()"
+        >
+          <div class="lightbox-content" (click)="$event.stopPropagation()">
+            <button class="lightbox-close" (click)="closeLightbox()">
+              &times;
+            </button>
+            <img
+              [src]="space?.gallery?.[activeImageIndex]"
+              class="lightbox-image"
+              alt="Gallery image"
+            />
+            <button class="lightbox-nav prev" (click)="prevImage()">
+              &#10094;
+            </button>
+            <button class="lightbox-nav next" (click)="nextImage()">
+              &#10095;
+            </button>
           </div>
         </div>
 
@@ -144,24 +165,6 @@
               Avis
             </button>
           </li>
-          <li
-            class="nav-item"
-            role="presentation"
-            *ngIf="isLoggedIn() && subscriptionPlans.length > 0"
-          >
-            <button
-              class="nav-link"
-              id="subscriptions-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#subscriptions"
-              type="button"
-              role="tab"
-              aria-controls="subscriptions"
-              aria-selected="false"
-            >
-              Abonnements
-            </button>
-          </li>
         </ul>
 
         <!-- Tab Content -->
@@ -189,10 +192,7 @@
                 class="d-flex align-items-center gap-2"
               >
                 <i class="bi bi-check-circle-fill text-primary"></i>
-                <span>{{ amenity.name }}</span>
-                <small class="text-muted" *ngIf="amenity.description"
-                  >- {{ amenity.description }}</small
-                >
+                <span>{{ amenity }}</span>
               </div>
             </div>
           </div>
@@ -213,16 +213,13 @@
                     <label class="form-label">Note</label>
                     <div class="d-flex gap-1">
                       <span
-                        *ngFor="
-                          let filled of getStars(newReview.rating);
-                          let i = index
-                        "
-                        (click)="newReview.rating = i + 1"
+                        *ngFor="let i of [1, 2, 3, 4, 5]"
+                        (click)="newReview.rating = i"
                         class="fs-4 cursor-pointer"
                       >
                         <i
                           [class]="
-                            filled
+                            i <= (newReview.rating || 0)
                               ? 'bi bi-star-fill text-warning'
                               : 'bi bi-star text-warning'
                           "
@@ -238,7 +235,7 @@
                       class="form-control"
                       id="reviewComment"
                       rows="3"
-                      [(ngModel)]="newReview.comment"
+                      [(ngModel)]="newReview.commentaire"
                       name="comment"
                       required
                     ></textarea>
@@ -265,24 +262,43 @@
                   <div class="d-flex justify-content-between mb-2">
                     <div>
                       <h4 class="h6 fw-bold mb-0">
-                        {{ review.user?.name || "Anonyme" }}
+                        {{
+                          (review.userFirstName ? review.userFirstName : "") +
+                            (review.userLastName
+                              ? " " + review.userLastName
+                              : "") ||
+                            review.userUsername ||
+                            "Anonyme"
+                        }}
                       </h4>
-                      <small class="text-muted">{{
-                        review.date | date : "mediumDate"
-                      }}</small>
+                      <small class="text-muted">
+                        {{ review.date | date : "mediumDate" }}
+                      </small>
                     </div>
+
                     <div class="d-flex gap-1">
                       <span
-                        *ngFor="let filled of getStars(review.rating)"
+                        *ngFor="let i of [1, 2, 3, 4, 5]"
                         class="text-warning"
                       >
                         <i
-                          [class]="filled ? 'bi bi-star-fill' : 'bi bi-star'"
+                          [class]="
+                            i <= review.rating
+                              ? 'bi bi-star-fill'
+                              : 'bi bi-star'
+                          "
                         ></i>
                       </span>
+                      <button
+                        *ngIf="isCurrentUserAdmin()"
+                        class="btn btn-sm btn-outline-danger ms-2"
+                        (click)="deleteReview(review.id!)"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
                     </div>
                   </div>
-                  <p class="mb-0">{{ review.comment }}</p>
+                  <p class="mb-0">{{ review.commentaire }}</p>
                 </div>
               </div>
             </div>
@@ -292,117 +308,6 @@
                 Aucun avis pour cet espace pour le moment.
               </div>
             </ng-template>
-          </div>
-
-          <!-- Subscriptions Tab -->
-          <div
-            class="tab-pane fade"
-            id="subscriptions"
-            role="tabpanel"
-            aria-labelledby="subscriptions-tab"
-            *ngIf="isLoggedIn() && subscriptionPlans.length > 0"
-          >
-            <div class="card mb-4">
-              <div class="card-body">
-                <h3 class="h4 fw-bold mb-3">Options d'abonnement</h3>
-                <p class="text-muted mb-4">
-                  Choisissez un plan d'abonnement pour bénéficier d'avantages
-                  exclusifs et de tarifs préférentiels.
-                </p>
-
-                <div class="mb-4">
-                  <label class="form-label">Périodicité</label>
-                  <select
-                    class="form-select"
-                    [(ngModel)]="billingCycle"
-                    (change)="selectedPlan = null"
-                  >
-                    <option value="MONTHLY">Mensuel</option>
-                    <option value="YEARLY">Annuel (10% de réduction)</option>
-                  </select>
-                </div>
-
-                <div class="row g-4">
-                  <div class="col-md-6" *ngFor="let plan of subscriptionPlans">
-                    <div
-                      class="card h-100"
-                      [class.border-primary]="selectedPlan?.type === plan.type"
-                    >
-                      <div class="card-body">
-                        <h4 class="card-title">{{ plan.name }}</h4>
-                        <h5 class="text-primary mb-3">
-                          {{
-                            billingCycle === "MONTHLY"
-                              ? (plan.price | currency : "TND" : "symbol") +
-                                "/mois"
-                              : (plan.price * 12 * 0.9
-                                  | currency : "TND" : "symbol") + "/an"
-                          }}
-                        </h5>
-                        <p class="card-text">{{ plan.description }}</p>
-                        <ul class="list-unstyled">
-                          <li
-                            *ngFor="let feature of plan.features"
-                            class="mb-2"
-                          >
-                            <i
-                              class="bi bi-check-circle-fill text-primary me-2"
-                            ></i>
-                            {{ feature }}
-                          </li>
-                        </ul>
-                      </div>
-                      <div class="card-footer bg-transparent">
-                        <button
-                          class="btn btn-outline-primary w-100"
-                          (click)="selectPlan(plan)"
-                          [class.btn-primary]="selectedPlan?.type === plan.type"
-                        >
-                          {{
-                            selectedPlan?.type === plan.type
-                              ? "Sélectionné"
-                              : "Choisir ce plan"
-                          }}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div *ngIf="selectedPlan" class="mt-4 p-3 bg-light rounded">
-                  <h5 class="fw-bold mb-3">Récapitulatif</h5>
-                  <div class="d-flex justify-content-between mb-2">
-                    <span>Plan sélectionné:</span>
-                    <span class="fw-bold">{{ selectedPlan.name }}</span>
-                  </div>
-                  <div class="d-flex justify-content-between mb-2">
-                    <span>Périodicité:</span>
-                    <span class="fw-bold">{{
-                      billingCycle === "MONTHLY" ? "Mensuelle" : "Annuelle"
-                    }}</span>
-                  </div>
-                  <div class="d-flex justify-content-between mb-2">
-                    <span>Prix:</span>
-                    <span class="fw-bold">{{
-                      getPrice() | currency : "TND" : "symbol"
-                    }}</span>
-                  </div>
-                  <hr />
-                  <div class="d-flex justify-content-between">
-                    <span class="fw-bold">Total:</span>
-                    <span class="fw-bold text-primary fs-5">{{
-                      getPrice() | currency : "TND" : "symbol"
-                    }}</span>
-                  </div>
-                  <button
-                    class="btn btn-primary w-100 mt-3"
-                    (click)="subscribe()"
-                  >
-                    Souscrire maintenant
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -433,14 +338,16 @@
                 <label class="form-label">Date</label>
                 <div class="input-group">
                   <input
-                    class="form-control"
-                    placeholder="yyyy-mm-dd"
-                    ngbDatepicker
-                    #d="ngbDatepicker"
-                    [(ngModel)]="selectedDate"
-                    name="date"
-                    required
-                  />
+  class="form-control"
+  placeholder="yyyy-mm-dd"
+  ngbDatepicker
+  #d="ngbDatepicker"
+  [(ngModel)]="selectedDate"
+  name="date"
+  [markDisabled]="isDateDisabledForPicker"  
+  [dayTemplate]="customDayTemplate"
+  required
+/>
                   <button
                     class="btn btn-outline-secondary"
                     (click)="d.toggle()"
@@ -451,12 +358,32 @@
                 </div>
               </div>
 
+             <ng-template #customDayTemplate let-date="date" let-currentMonth="currentMonth">
+  <div 
+    class="date-cell"
+    [class.disabled-indisponible]="isDateDisabled(date).reason === 'indisponible'"
+    [class.disabled-reserved-by-user]="isDateDisabled(date).reason === 'reserved-by-user'"
+    [class.disabled-reserved-by-others]="isDateDisabled(date).reason === 'reserved-by-others'"
+    [class.text-muted]="date.month !== currentMonth"
+    [ngbTooltip]="getDateTooltip(date)"
+    placement="top"
+    triggers="manual"
+    #t="ngbTooltip"
+    (mouseenter)="onDateHover(date, t)"
+    (mouseleave)="t.close()"
+    [style.pointer-events]="isDateDisabled(date).disabled ? 'auto' : 'auto'"
+  >
+    {{ date.day }}
+  </div>
+</ng-template>
+
               <!-- Start Time -->
               <div class="mb-3">
                 <label class="form-label">Heure de début</label>
                 <ngb-timepicker
                   [(ngModel)]="selectedStartTime"
                   name="startTime"
+                  [disabled]="!selectedDate || isDateDisabled(selectedDate).disabled"
                   required
                 ></ngb-timepicker>
               </div>
@@ -467,6 +394,7 @@
                 <ngb-timepicker
                   [(ngModel)]="selectedEndTime"
                   name="endTime"
+                  [disabled]="!selectedDate || isDateDisabled(selectedDate).disabled"
                   required
                 ></ngb-timepicker>
               </div>
@@ -474,16 +402,16 @@
               <!-- Price Calculation -->
               <div class="mb-4 p-3 bg-light rounded">
                 <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">Tarif horaire:</span>
+                  <span class="text-muted">Tarif journalier:</span>
                   <span class="fw-bold">{{
-                    space.pricePerHour | currency : "TND" : "symbol" : "1.2-2"
+                    space.prixParJour | currency : "TND" : "symbol" : "1.2-2"
                   }}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                  <span class="text-muted">Tarif journalier:</span>
-                  <span class="fw-bold">{{
-                    space.pricePerDay | currency : "TND" : "symbol" : "1.2-2"
-                  }}</span>
+                  <span class="text-muted">Durée:</span>
+                  <span class="fw-bold"
+                    >{{ calculateDurationInHours() }} heures</span
+                  >
                 </div>
                 <hr />
                 <div class="d-flex justify-content-between">
@@ -501,7 +429,7 @@
               <button
                 type="submit"
                 class="btn btn-primary w-100"
-                [disabled]="bookingInProgress"
+                [disabled]="bookingInProgress || !isLoggedIn()"
               >
                 <span
                   *ngIf="bookingInProgress"
@@ -525,28 +453,10 @@
                 >Se connecter</a
               >
             </div>
-
-            <!-- Subscription Quick Link -->
-            <div
-              *ngIf="isLoggedIn() && subscriptionPlans.length > 0"
-              class="mt-4"
-            >
-              <div class="d-grid">
-                <button
-                  class="btn btn-outline-primary"
-                  (click)="
-                    showSubscriptionPlans = !showSubscriptionPlans;
-                    selectTab('subscriptions')
-                  "
-                >
-                  <i class="bi bi-credit-card me-2"></i>
-                  Voir les options d'abonnement
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+

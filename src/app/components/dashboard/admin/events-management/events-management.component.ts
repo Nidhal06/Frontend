@@ -1,12 +1,11 @@
+
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { EventService } from 'src/app/services/event.service';
-import { SpaceService } from 'src/app/services/space.service';
-import { format, parseISO } from 'date-fns';
+import { EvenementService } from '../../../../services/evenement.service';
+import { EspaceService } from '../../../../services/espace.service';
+import { EvenementDTO, EspaceDTO, ParticipantDTO } from '../../../../types/entities';
 import { ToastrService } from 'ngx-toastr';
-import { Event } from 'src/app/services/event.model';
-import { PrivateSpace } from 'src/app/services/space.model';
 
 @Component({
   selector: 'app-events-management',
@@ -14,26 +13,29 @@ import { PrivateSpace } from 'src/app/services/space.model';
   styleUrls: ['./events-management.component.css']
 })
 export class EventsManagementComponent implements OnInit {
-  events: Event[] = [];
-  spaces: PrivateSpace[] = [];
+  events: EvenementDTO[] = [];
+  espaces: EspaceDTO[] = [];
   isLoading = false;
-  selectedEvent: Event | null = null;
+  isLoadingParticipants = false;
+  selectedEvent: EvenementDTO | null = null;
+  selectedEventParticipants: ParticipantDTO[] = [];
+  selectedEventId: number | null = null;
   eventForm: FormGroup;
 
   constructor(
-    private eventService: EventService,
-    private spaceService: SpaceService,
-    private modalService: NgbModal,
+    private evenementService: EvenementService,
+    private espaceService: EspaceService,
     private fb: FormBuilder,
+    private modalService: NgbModal,
     private toastr: ToastrService
   ) {
     this.eventForm = this.fb.group({
-      title: ['', Validators.required],
+      titre: ['', Validators.required],
       description: [''],
-      startTime: ['', Validators.required],
-      endTime: ['', Validators.required],
-      maxParticipants: [10, [Validators.required, Validators.min(1)]],
-      spaceId: [null, Validators.required],
+      startDate: ['', Validators.required],
+      endDate: ['', Validators.required],
+      espaceId: ['', Validators.required],
+      maxParticipants: ['', [Validators.required, Validators.min(1)]],
       price: [0, [Validators.min(0)]],
       isActive: [true]
     });
@@ -41,120 +43,107 @@ export class EventsManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadEvents();
-    this.loadSpaces();
-
-    // Add this to watch for spaceId changes
-  this.eventForm.get('spaceId')?.valueChanges.subscribe(spaceId => {
-    this.onSpaceChange(spaceId);
-  });
+    this.loadEspaces();
   }
 
   loadEvents(): void {
     this.isLoading = true;
-    this.eventService.getAllEvents().subscribe({
+    this.evenementService.getAllEvenements().subscribe({
       next: (events) => {
         this.events = events;
         this.isLoading = false;
       },
       error: (err) => {
-        this.toastr.error('Error loading events');
+        this.toastr.error('Erreur lors du chargement des événements');
         this.isLoading = false;
       }
     });
   }
 
-  loadSpaces(): void {
-    this.spaceService.getAllSpaces().subscribe({
-      next: (spaces) => {
-        this.spaces = spaces;
+  loadEspaces(): void {
+    this.espaceService.getAllEspaces().subscribe({
+      next: (espaces) => {
+        this.espaces = espaces;
       },
       error: (err) => {
-        this.toastr.error('Error loading spaces');
+        this.toastr.error('Erreur lors du chargement des espaces');
       }
     });
   }
 
-  openAddModal(content: TemplateRef<any>): void {
-    this.eventForm.reset({
-      title: '',
-      description: '',
-      startTime: '',
-      endTime: '',
-      maxParticipants: 10,
-      spaceId: null,
-      price: 0,
-      isActive: true
+  loadEventParticipants(eventId: number): void {
+    this.isLoadingParticipants = true;
+    this.evenementService.getEvenementById(eventId).subscribe({
+      next: (event) => {
+        this.selectedEventParticipants = event.participants || [];
+        this.isLoadingParticipants = false;
+      },
+      error: (err) => {
+        this.toastr.error('Erreur lors du chargement des participants');
+        this.isLoadingParticipants = false;
+      }
     });
-    this.selectedEvent = null;
-    this.modalService.open(content, { size: 'lg' });
   }
 
-  openEditModal(content: TemplateRef<any>, event: Event): void {
+  openAddModal(modal: TemplateRef<any>): void {
+    this.eventForm.reset({
+      isActive: true,
+      price: 0
+    });
+    this.modalService.open(modal, { size: 'lg' });
+  }
+
+  openEditModal(modal: TemplateRef<any>, event: EvenementDTO): void {
     this.selectedEvent = event;
     this.eventForm.patchValue({
-      title: event.title,
+      titre: event.titre,
       description: event.description,
-      startTime: format(parseISO(event.startTime), 'yyyy-MM-dd\'T\'HH:mm'),
-      endTime: format(parseISO(event.endTime), 'yyyy-MM-dd\'T\'HH:mm'),
+      startDate: this.formatDateForInput(event.startDate),
+      endDate: this.formatDateForInput(event.endDate),
+      espaceId: event.espaceId,
       maxParticipants: event.maxParticipants,
-      spaceId: event.space?.id || event.spaceId,
       price: event.price,
       isActive: event.isActive
     });
-    this.modalService.open(content, { size: 'lg' });
+    this.modalService.open(modal, { size: 'lg' });
   }
 
-  openDeleteModal(content: TemplateRef<any>, event: Event): void {
+  openParticipantsModal(modal: TemplateRef<any>, event: EvenementDTO): void {
     this.selectedEvent = event;
-    this.modalService.open(content);
+    this.loadEventParticipants(event.id!);
+    this.modalService.open(modal, { size: 'lg' });
   }
 
-  onSpaceChange(spaceId: number): void {
-    // Your logic here
+  openDeleteModal(modal: TemplateRef<any>, event: EvenementDTO): void {
+    this.selectedEvent = event;
+    this.modalService.open(modal);
   }
 
   addEvent(): void {
-    if (this.eventForm.invalid) {
-      this.toastr.error('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-  
-    // Convertir les dates en format ISO sans timezone
-    const startTime = new Date(this.eventForm.value.startTime);
-    const endTime = new Date(this.eventForm.value.endTime);
-  
-    // Formater les dates pour le backend
-    const formattedStartTime = startTime.toISOString();
-    const formattedEndTime = endTime.toISOString();
-  
-    // Vérifier que endTime est après startTime
-    if (endTime <= startTime) {
-      this.toastr.error('La date de fin doit être après la date de début');
-      return;
-    }
-  
-    const formData = {
-      title: this.eventForm.value.title,
-      description: this.eventForm.value.description,
-      startTime: formattedStartTime,
-      endTime: formattedEndTime,
-      spaceId: this.eventForm.value.spaceId,
-      maxParticipants: this.eventForm.value.maxParticipants,
-      price: this.eventForm.value.price,
-      isActive: this.eventForm.value.isActive
+    if (this.eventForm.invalid) return;
+
+    const formValue = this.eventForm.value;
+    const newEvent: EvenementDTO = {
+      titre: formValue.titre,
+      description: formValue.description,
+      startDate: formValue.startDate,
+      endDate: formValue.endDate,
+      espaceId: formValue.espaceId,
+      maxParticipants: formValue.maxParticipants,
+      price: formValue.price,
+      isActive: formValue.isActive,
+      participants: [],
+      espaceName: this.getEspaceName(formValue.espaceId)
     };
-  
-    console.log('Données envoyées:', formData); // Pour le débogage
-  
-    this.eventService.createEvent(formData).subscribe({
+
+    this.evenementService.createEvenement(newEvent).subscribe({
       next: () => {
         this.toastr.success('Événement créé avec succès');
-        this.modalService.dismissAll();
         this.loadEvents();
+        this.modalService.dismissAll();
       },
       error: (err) => {
-        console.error('Erreur détaillée:', err);
-        this.toastr.error(`Erreur lors de la création: ${err.error?.message || err.message}`);
+        this.toastr.error('Erreur lors de la création de l\'événement');
       }
     });
   }
@@ -162,21 +151,27 @@ export class EventsManagementComponent implements OnInit {
   updateEvent(): void {
     if (this.eventForm.invalid || !this.selectedEvent) return;
 
-    const formData = {
-      ...this.eventForm.value,
-      id: this.selectedEvent.id,
-      startTime: new Date(this.eventForm.value.startTime).toISOString(),
-      endTime: new Date(this.eventForm.value.endTime).toISOString()
+    const formValue = this.eventForm.value;
+    const updatedEvent: EvenementDTO = {
+      ...this.selectedEvent,
+      titre: formValue.titre,
+      description: formValue.description,
+      startDate: formValue.startDate,
+      endDate: formValue.endDate,
+      espaceId: formValue.espaceId,
+      maxParticipants: formValue.maxParticipants,
+      price: formValue.price,
+      isActive: formValue.isActive
     };
 
-    this.eventService.updateEvent(this.selectedEvent.id, formData).subscribe({
+    this.evenementService.updateEvenement(this.selectedEvent.id!, updatedEvent).subscribe({
       next: () => {
-        this.toastr.success('Event updated successfully');
-        this.modalService.dismissAll();
+        this.toastr.success('Événement mis à jour avec succès');
         this.loadEvents();
+        this.modalService.dismissAll();
       },
       error: (err) => {
-        this.toastr.error('Error updating event');
+        this.toastr.error('Erreur lors de la mise à jour de l\'événement');
       }
     });
   }
@@ -184,31 +179,53 @@ export class EventsManagementComponent implements OnInit {
   deleteEvent(): void {
     if (!this.selectedEvent) return;
 
-    this.eventService.deleteEvent(this.selectedEvent.id).subscribe({
+    this.evenementService.deleteEvenement(this.selectedEvent.id!).subscribe({
       next: () => {
-        this.toastr.success('Event deleted successfully');
+        this.toastr.success('Événement supprimé avec succès');
+        this.loadEvents();
         this.modalService.dismissAll();
-        this.loadEvents();
       },
       error: (err) => {
-        this.toastr.error('Error deleting event');
+        this.toastr.error('Erreur lors de la suppression de l\'événement');
       }
     });
   }
 
-  toggleEventStatus(event: Event): void {
-    this.eventService.toggleEventStatus(event.id, !event.isActive).subscribe({
+  toggleEventStatus(event: EvenementDTO): void {
+    const updatedEvent = { ...event, isActive: !event.isActive };
+    this.evenementService.updateEvenement(event.id!, updatedEvent).subscribe({
       next: () => {
-        this.toastr.success('Event status updated');
+        this.toastr.success('Statut de l\'événement mis à jour');
         this.loadEvents();
       },
       error: (err) => {
-        this.toastr.error('Error updating event status');
+        this.toastr.error('Erreur lors de la mise à jour du statut');
       }
     });
   }
 
-  formatDate(dateString: string): string {
-    return format(parseISO(dateString), 'MMM d, yyyy h:mm a');
+  unregisterParticipant(eventId: number, userId: number, index: number): void {
+    if (confirm('Êtes-vous sûr de vouloir désinscrire ce participant ?')) {
+      this.evenementService.cancelParticipation(eventId, userId).subscribe({
+        next: () => {
+          this.toastr.success('Participant désinscrit avec succès');
+          this.selectedEventParticipants.splice(index, 1);
+          this.loadEvents();
+        },
+        error: (err) => {
+          this.toastr.error('Erreur lors de la désinscription du participant');
+        }
+      });
+    }
+  }
+
+  private formatDateForInput(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toISOString().slice(0, 16);
+  }
+
+  getEspaceName(espaceId: number): string {
+    const espace = this.espaces.find(e => e.id === espaceId);
+    return espace ? espace.name : 'Non spécifié';
   }
 }

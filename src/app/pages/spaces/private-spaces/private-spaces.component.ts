@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { PrivateSpace, Amenity } from '../../../services/space.model';
-import { SpaceService } from '../../../services/space.service';
+import { EspaceDTO , EspacePriveDTO } from '../../../types/entities';
+import { EspaceService } from '../../../services/espace.service';
+import { AuthService } from '../../../services/auth.service';
+import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+import { environment } from 'src/app/services/environments/environment';
 
 @Component({
   selector: 'app-private-spaces',
@@ -8,142 +12,129 @@ import { SpaceService } from '../../../services/space.service';
   styleUrls: ['./private-spaces.component.css']
 })
 export class PrivateSpacesComponent implements OnInit {
-  spaces: any[] = [];
-  filteredSpaces: any[] = [];
+  spaces: EspacePriveDTO[] = [];
+  featuredSpaces: (EspaceDTO | EspacePriveDTO)[] = [];
+  filteredSpaces: EspacePriveDTO[] = [];
   searchTerm = '';
   capacityFilter = 'all';
   amenitiesFilter: string[] = [];
   sortBy = 'default';
   isLoading = true;
-  allAmenities: string[] = [];
+  allAmenities: string[] = [
+    'Wi-Fi', 'Projecteur', 'Climatisation', 'Tableau blanc', 
+    'Télévision', 'Système audio', 'Café/thé', 'Parking'
+  ];
+  environment = environment;
 
-// Pagination properties
+  // Pagination properties
   currentPage = 1;
-  itemsPerPage = 3;
+  itemsPerPage = 6;
   totalItems = 0;
 
-  constructor(private spaceService: SpaceService) {}
+  constructor(
+    private espaceService: EspaceService,
+    private authService: AuthService,
+    private router: Router,
+    private toastr: ToastrService
+  ) { }
 
-  ngOnInit() {
-    this.loadSpaces();
+  ngOnInit(): void {
+    this.loadPrivateSpaces();
   }
 
-  loadSpaces(): void {
-    this.isLoading = true;
-    this.spaceService.getAllSpaces().subscribe({
-      next: (spaces: any[]) => {
-        this.spaces = spaces;
-        this.filteredSpaces = [...this.spaces];
-        this.totalItems = this.filteredSpaces.length;
-        this.isLoading = false;
+  loadPrivateSpaces(): void {
+  this.isLoading = true;
+  this.espaceService.getAllEspacePrives().subscribe({
+    next: (spaces) => {
+      this.spaces = spaces.map(space => {
+        // Nettoyer l'URL en enlevant le domaine si présent
+        let cleanedPhoto = space.photoPrincipal;
+        if (cleanedPhoto) {
+          // Supprimer http://localhost:1010 s'il est présent
+          cleanedPhoto = cleanedPhoto.replace(/^http:\/\/localhost:1010/, '');
+          // S'assurer que le chemin commence par /
+          if (!cleanedPhoto.startsWith('/')) {
+            cleanedPhoto = '/' + cleanedPhoto;
+          }
+        }
         
-        // Extraire les équipements uniques
-        this.allAmenities = Array.from(
-          new Set(this.spaces.flatMap((s: any) => s.amenities?.map((a: any) => a.name) || []))
-        ).sort() as string[];
-      },
-      error: (err) => {
-        console.error('Error loading spaces:', err);
-        this.isLoading = false;
+        return {
+          ...space,
+          photoPrincipal: cleanedPhoto 
+            ? `${environment.apiUrl}${cleanedPhoto}` 
+            : 'assets/images/default-space.jpg'
+        };
+      });
+
+      this.filteredSpaces = [...this.spaces];
+      this.extractAllAmenities();
+      this.applyFilters();
+      this.isLoading = false;
+    },
+    error: (error) => {
+      console.error('Error loading private spaces:', error);
+      this.toastr.error('Erreur lors du chargement des espaces privés', 'Erreur');
+      this.isLoading = false;
+    }
+  });
+ }
+
+  extractAllAmenities(): void {
+    const amenitiesSet = new Set<string>();
+    this.spaces.forEach(space => {
+      if (space.amenities) {
+        space.amenities.forEach(amenity => amenitiesSet.add(amenity));
       }
     });
+    this.allAmenities = Array.from(amenitiesSet);
   }
 
-  applyFilters() {
-    let results = [...this.spaces];
-    
-    // Search filter
+  applyFilters(): void {
+    let result = [...this.spaces];
+
+    // Apply search filter
     if (this.searchTerm) {
-      results = results.filter((space: any) => 
-        space.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        (space.description && space.description.toLowerCase().includes(this.searchTerm.toLowerCase()))
-      );
+      const term = this.searchTerm.toLowerCase();
+      result = result.filter(space => 
+        space.name.toLowerCase().includes(term) || 
+        space.description.toLowerCase().includes(term));
     }
-    
-    // Capacity filter
-    if (this.capacityFilter && this.capacityFilter !== 'all') {
-      const capacity = parseInt(this.capacityFilter);
-      results = results.filter((space: any) => space.capacity >= capacity);
+
+    // Apply capacity filter
+    if (this.capacityFilter !== 'all') {
+      const minCapacity = parseInt(this.capacityFilter);
+      result = result.filter(space => space.capacity >= minCapacity);
     }
-    
-    // Amenities filter
+
+    // Apply amenities filter
     if (this.amenitiesFilter.length > 0) {
-      results = results.filter((space: any) => 
-        this.amenitiesFilter.every(amenityName => 
-          space.amenities?.some((amenity: any) => amenity.name === amenityName)
-        )
-      );
+      result = result.filter(space => 
+        this.amenitiesFilter.every(amenity => 
+          space.amenities?.includes(amenity)));
     }
-    
-    // Sorting
-    if (this.sortBy === 'price-asc') {
-      results.sort((a: any, b: any) => a.pricePerHour - b.pricePerHour);
-    } else if (this.sortBy === 'price-desc') {
-      results.sort((a: any, b: any) => b.pricePerHour - a.pricePerHour);
-    } else if (this.sortBy === 'capacity-asc') {
-      results.sort((a: any, b: any) => a.capacity - b.capacity);
-    } else if (this.sortBy === 'capacity-desc') {
-      results.sort((a: any, b: any) => b.capacity - a.capacity);
+
+    // Apply sorting
+    switch (this.sortBy) {
+      case 'price-asc':
+        result.sort((a, b) => a.prixParJour - b.prixParJour);
+        break;
+      case 'price-desc':
+        result.sort((a, b) => b.prixParJour - a.prixParJour);
+        break;
+      case 'capacity-asc':
+        result.sort((a, b) => a.capacity - b.capacity);
+        break;
+      case 'capacity-desc':
+        result.sort((a, b) => b.capacity - a.capacity);
+        break;
     }
-    
-    this.filteredSpaces = results;
-    this.totalItems = results.length;
-    this.currentPage = 1; 
+
+    this.filteredSpaces = result;
+    this.currentPage = 1;
+    this.totalItems = this.filteredSpaces.length;
   }
 
-   // Get current page items
-   get paginatedSpaces() {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    return this.filteredSpaces.slice(startIndex, startIndex + this.itemsPerPage);
-  }
-
-  // Change page
-  pageChanged(page: number) {
-    this.currentPage = page;
-  }
-
-  // Calculate total pages
-getTotalPages(): number {
-  return Math.ceil(this.totalItems / this.itemsPerPage);
-}
-
-// Generate page numbers for pagination
-getPages(): number[] {
-  const totalPages = this.getTotalPages();
-  const pages: number[] = [];
-  
-  // Always show first page
-  pages.push(1);
-  
-  // Show pages around current page
-  const start = Math.max(2, this.currentPage - 2);
-  const end = Math.min(totalPages - 1, this.currentPage + 2);
-  
-  for (let i = start; i <= end; i++) {
-    if (i > 1 && i < totalPages) {
-      pages.push(i);
-    }
-  }
-  
-  // Always show last page
-  if (totalPages > 1) {
-    pages.push(totalPages);
-  }
-  
-  return pages;
-}
-
-  toggleAmenityFilter(amenity: string) {
-    const index = this.amenitiesFilter.indexOf(amenity);
-    if (index >= 0) {
-      this.amenitiesFilter.splice(index, 1);
-    } else {
-      this.amenitiesFilter.push(amenity);
-    }
-    this.applyFilters();
-  }
-
-  resetFilters() {
+  resetFilters(): void {
     this.searchTerm = '';
     this.capacityFilter = 'all';
     this.amenitiesFilter = [];
@@ -151,8 +142,36 @@ getPages(): number[] {
     this.applyFilters();
   }
 
-  handleReserve(spaceId: number) {
-    console.log(`Reserve space with ID: ${spaceId}`);
-    // Add your reservation logic here
+  toggleAmenityFilter(amenity: string): void {
+    const index = this.amenitiesFilter.indexOf(amenity);
+    if (index === -1) {
+      this.amenitiesFilter.push(amenity);
+    } else {
+      this.amenitiesFilter.splice(index, 1);
+    }
+    this.applyFilters();
+  }
+
+  // Pagination methods
+  get paginatedSpaces(): EspacePriveDTO[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    return this.filteredSpaces.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.filteredSpaces.length / this.itemsPerPage);
+  }
+
+  getPages(): number[] {
+    const totalPages = this.getTotalPages();
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  pageChanged(page: number): void {
+    this.currentPage = page;
+  }
+
+  isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
   }
 }

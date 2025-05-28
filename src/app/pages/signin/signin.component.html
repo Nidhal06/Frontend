@@ -28,23 +28,23 @@
 
           <!-- Formulaire -->
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="px-lg-5 mx-lg-3">
-            <!-- Username -->
+            <!-- Email -->
             <div class="form-group mb-4">
               <label for="email" class="form-label fw-bold text-secondary mb-2">
-                <i class="bi bi-person-fill me-2"></i>Nom d'utilisateur
+                <i class="bi bi-envelope-fill me-2"></i>Email
               </label>
               <input
-                type="text"
+                type="email"
                 class="form-control form-control-lg py-2"
-                id="username"
-                placeholder="Entrez votre nom d'utilisateur"
-                formControlName="username"
-                [ngClass]="{ 'is-invalid': f['username'].touched && f['username'].errors }"
+                id="email"
+                placeholder="Entrez votre email"
+                formControlName="email"
+                [ngClass]="{ 'is-invalid': f['email'].touched && f['email'].errors }"
               >
-              <div *ngIf="f['username'].touched && f['username'].errors" class="invalid-feedback d-block">
+              <div *ngIf="f['email'].touched && f['email'].errors" class="invalid-feedback d-block">
                 <small><i class="bi bi-exclamation-circle-fill me-1"></i>
-                  <span *ngIf="f['username'].errors?.['required']">Ce champ est obligatoire</span>
-                  <span *ngIf="f['username'].errors?.['username']">Format de nom d'utilisateur invalide</span>
+                  <span *ngIf="f['email'].errors?.['required']">Ce champ est obligatoire</span>
+                  <span *ngIf="f['email'].errors?.['email']">Format d'email invalide</span>
                 </small>
               </div>
             </div>
@@ -107,16 +107,6 @@
                 <a routerLink="/signup" class="text-decoration-none fw-bold text-primary ms-1">
                   S'inscrire maintenant
                 </a>
-              </p>
-            </div>
-
-            <!-- Mentions légales -->
-            <div class="text-center text-muted small border-top pt-4">
-              <p class="mb-0">
-                En vous connectant, vous acceptez nos
-                <a routerLink="/terms" class="text-decoration-none">Conditions d'utilisation</a>
-                et notre
-                <a routerLink="/privacy" class="text-decoration-none">Politique de confidentialité</a>.
               </p>
             </div>
           </form>

@@ -1,0 +1,111 @@
+<div class="container-fluid py-4">
+  <!-- Modal de confirmation de suppression d'avis -->
+  <ng-template #cancelModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Confirmation de suppression</h5>
+      <button
+        type="button"
+        class="btn-close"
+        aria-label="Close"
+        (click)="modal.dismiss()"
+      ></button>
+    </div>
+    <div class="modal-body">
+      Êtes-vous sûr de vouloir supprimer cet avis ?
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+        Non
+      </button>
+      <button
+        type="button"
+        class="btn btn-danger"
+        (click)="confirmDelete(); modal.close()"
+      >
+        Oui, supprimer
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Bouton retour -->
+  <div class="mb-3">
+    <a routerLink="/coworker-dashboard" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Retour au tableau de bord
+    </a>
+  </div>
+
+  <!-- En-tête -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+    <div class="mb-3 mb-md-0">
+      <h1 class="h2 mb-2">Mes avis</h1>
+      <p class="mb-0 text-muted">
+        Retrouvez tous les avis que vous avez laissés sur les espaces.
+      </p>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-2">Chargement des avis...</p>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Liste des avis -->
+  <div *ngIf="!isLoading && !errorMessage">
+    <div *ngIf="avisList.length === 0" class="alert alert-info" role="alert">
+      Vous n'avez encore publié aucun avis.
+    </div>
+
+    <div *ngIf="avisList.length > 0" class="card shadow-sm">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Espace</th>
+                <th>Note</th>
+                <th>Commentaire</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let avis of avisList">
+                <td><strong>{{ avis.espaceName }}</strong></td>
+                <td>
+                  <ng-container *ngFor="let star of [1,2,3,4,5]">
+                    <i
+                      class="bi"
+                      [ngClass]="{
+                        'bi-star-fill text-warning': star <= avis.rating,
+                        'bi-star text-muted': star > avis.rating
+                      }"
+                    ></i>
+                  </ng-container>
+                  <span class="ms-1">({{ avis.rating }}/5)</span>
+                </td>
+                <td>{{ avis.commentaire || 'Aucun commentaire fourni.' }}</td>
+                <td>{{ avis.date | date: 'dd/MM/yyyy' }}</td>
+                <td>
+                  <button
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="openDeleteModal(avis.id!, cancelModal)"
+                  >
+                    <i class="bi bi-trash"></i> Supprimer
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

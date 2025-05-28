@@ -1,184 +1,192 @@
-// spaces-management.component.ts
-import { Component, OnInit } from '@angular/core';
-import { PrivateSpaceService } from 'src/app/services/privatespace.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AmenityService } from 'src/app/services/amenity.service';
-import Swal from 'sweetalert2';
-import { PrivateSpace, Amenity } from '../../../../services/space.model';
 
+import { Component, OnInit, ViewChild  } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { EspaceService } from '../../../../services/espace.service';
+import { EspaceDTO, EspacePriveDTO, EspaceOuvertDTO } from '../../../../types/entities';
+import { ToastrService } from 'ngx-toastr';
+import { environment } from '../../../../services/environments/environment';
 @Component({
   selector: 'app-spaces-management',
   templateUrl: './spaces-management.component.html',
   styleUrls: ['./spaces-management.component.css']
 })
 export class SpacesManagementComponent implements OnInit {
-  spaces: PrivateSpace[] = [];
-  filteredSpaces: PrivateSpace[] = [];
+  espaces: (EspaceDTO | EspacePriveDTO | EspaceOuvertDTO)[] = [];
+  filteredEspaces: EspaceDTO[] = [];
   isLoading = true;
   searchQuery = '';
-  currentSpace: PrivateSpace | null = null;
+  currentEspace: EspaceDTO | null = null;
   
-  // Forms
-  spaceForm: FormGroup;
+  espaceForm: FormGroup;
   editForm: FormGroup;
   
-  // Amenities
-  amenities: Amenity[] = [];
-  selectedAmenities: number[] = [];
-  
-  // Images
   selectedImages: File[] = [];
   previewImages: string[] = [];
-  mainPhoto: File | null = null;
+  mainPhoto: File | undefined = undefined;
   mainPhotoPreview: string | null = null;
   
-  // State
   isUploading = false;
   imagesToDelete: string[] = [];
+  environment = environment;
+
+  @ViewChild('deleteSpaceModal') deleteSpaceModal: any;
+  
+  espaceTypes = [
+    { value: 'PRIVE', display: 'Espace Privé' },
+    { value: 'OUVERT', display: 'Espace Ouvert' }
+  ];
 
   constructor(
-    private spaceService: PrivateSpaceService,
-    private amenityService: AmenityService,
+    private espaceService: EspaceService,
     private modalService: NgbModal,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private toastr: ToastrService
   ) {
-    // Initialize forms
-    this.spaceForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(100)]],
-      description: ['', Validators.maxLength(500)],
-      capacity: [1, [Validators.required, Validators.min(1), Validators.max(100)]],
-      pricePerHour: [0, [Validators.required, Validators.min(0)]],
-      pricePerDay: [0, [Validators.required, Validators.min(0)]],
-      isActive: [true],
-      amenities: [[]]
+    this.espaceForm = this.fb.group({
+      name: ['', Validators.required],
+      description: [''],
+      capacity: [1, [Validators.required, Validators.min(1)]],
+      type: ['PRIVE', Validators.required],
+      prixParJour: [0],
+      amenities: [''],
+      isActive: [true]
     });
 
     this.editForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(100)]],
-      description: ['', Validators.maxLength(500)],
-      capacity: [1, [Validators.required, Validators.min(1), Validators.max(100)]],
-      pricePerHour: [0, [Validators.required, Validators.min(0)]],
-      pricePerDay: [0, [Validators.required, Validators.min(0)]],
-      isActive: [true],
-      amenities: [[]]
+      name: ['', Validators.required],
+      description: [''],
+      capacity: [1, [Validators.required, Validators.min(1)]],
+      type: ['PRIVE', Validators.required],
+      prixParJour: [0],
+      amenities: [''],
+      isActive: [true]
     });
   }
 
   ngOnInit(): void {
-    this.loadSpaces();
-    this.loadAmenities();
+    this.loadEspaces();
   }
 
-  loadSpaces(): void {
-    this.isLoading = true;
-    this.spaceService.getAllSpaces().subscribe({
-      next: (spaces) => {
-        this.spaces = spaces;
-        this.filteredSpaces = [...spaces];
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading spaces:', err);
-        this.isLoading = false;
-        Swal.fire('Error', 'Could not load spaces', 'error');
-      }
-    });
-  }
+  loadEspaces(): void {
+  this.isLoading = true;
+  this.espaceService.getAllEspaces().subscribe({
+    next: (espaces) => {
+      this.espaces = espaces.map((espace) => {
+        // Créez un objet de base avec les champs communs
+        const baseEspace = {
+          ...espace,
+          photoPrincipal: espace.photoPrincipal 
+            ? `${environment.apiUrl}${espace.photoPrincipal}`
+            : 'assets/images/default-space.jpg',
+          gallery: espace.gallery?.map(img => `${environment.apiUrl}${img}`) || []
+        };
 
-  loadAmenities(): void {
-    this.amenityService.getAllAmenities().subscribe({
-      next: (amenities) => {
-        this.amenities = amenities;
-      },
-      error: (err) => {
-        console.error('Error loading amenities:', err);
-      }
-    });
-  }
+        // Si c'est un espace privé, ajoutez les champs spécifiques
+        if (espace.type === 'PRIVE') {
+          return {
+            ...baseEspace,
+            prixParJour: (espace as any).prixParJour || 0, 
+            amenities: (espace as any).amenities || []
+          } as EspacePriveDTO;
+        } else {
+          return baseEspace as EspaceOuvertDTO;
+        }
+      });
+
+      this.filteredEspaces = [...this.espaces];
+      this.isLoading = false;
+      
+      // Debug: Vérifiez le résultat dans la console
+      console.log('Espaces chargés:', this.espaces);
+    },
+    error: (err) => {
+      console.error('Error loading spaces:', err);
+      this.isLoading = false;
+      this.toastr.error('Erreur lors du chargement des espaces', 'Erreur');
+    }
+  });
+}
+
 
   onSearchChange(): void {
     if (!this.searchQuery.trim()) {
-      this.filteredSpaces = [...this.spaces];
-    } else {
-      const query = this.searchQuery.toLowerCase();
-      this.filteredSpaces = this.spaces.filter(space =>
-        space.name.toLowerCase().includes(query) ||
-        (space.description && space.description.toLowerCase().includes(query))
-      );
+      this.filteredEspaces = [...this.espaces];
+      return;
     }
+
+    const query = this.searchQuery.toLowerCase();
+    this.filteredEspaces = this.espaces.filter(espace =>
+      (espace.name?.toLowerCase().includes(query)) ||
+      (espace.description?.toLowerCase().includes(query)) ||
+      (espace.type?.toLowerCase().includes(query))
+    );
   }
 
   openAddModal(content: any): void {
-    this.spaceForm.reset({
-      name: '',
-      description: '',
+    this.resetForms();
+    this.clearImages();
+    this.espaceForm.reset({
+      type: 'PRIVE',
       capacity: 1,
-      pricePerHour: 0,
-      pricePerDay: 0,
-      isActive: true,
-      amenities: []
+      isActive: true
     });
-    this.selectedAmenities = [];
-    this.selectedImages = [];
-    this.previewImages = [];
-    this.mainPhoto = null;
-    this.mainPhotoPreview = null;
     this.modalService.open(content, { ariaLabelledBy: 'add-space-modal', size: 'lg' });
   }
 
-  openEditModal(content: any, space: PrivateSpace): void {
-    this.currentSpace = space;
-    this.editForm.patchValue({
-      name: space.name,
-      description: space.description || '',
-      capacity: space.capacity,
-      pricePerHour: space.pricePerHour,
-      pricePerDay: space.pricePerDay,
-      isActive: space.isActive,
-      amenities: space.amenities?.map(a => a.id) || []
+ openEditModal(content: any, espace: EspaceDTO): void {
+    // Conversion forcée pour accéder aux champs cachés
+    const espaceData = espace as any;
+    
+    // Debug complet
+    console.log('Données complètes:', {
+      ...espaceData,
+      prixExist: 'prixParJour' in espaceData,
+      amenitiesExist: 'amenities' in espaceData
     });
-    this.selectedAmenities = space.amenities?.map(a => a.id) || [];
-    this.previewImages = [];
-    this.mainPhoto = null;
-    this.mainPhotoPreview = null;
-    this.imagesToDelete = [];
-    this.modalService.open(content, { ariaLabelledBy: 'edit-space-modal', size: 'lg' });
-  }
 
-  onAmenityChange(amenityId: number, event: Event): void {
-    const isChecked = (event.target as HTMLInputElement).checked;
-    if (isChecked) {
-      this.selectedAmenities.push(amenityId);
-    } else {
-      this.selectedAmenities = this.selectedAmenities.filter(id => id !== amenityId);
-    }
-  }
+    this.currentEspace = espace;
+    this.clearImages();
+
+    // Préparation des valeurs avec fallback explicite
+    const formValues = {
+      name: espaceData.name,
+      description: espaceData.description,
+      capacity: espaceData.capacity,
+      type: espaceData.type,
+      isActive: espaceData.isActive,
+      prixParJour: espaceData.type === 'PRIVE' 
+        ? (espaceData.prixParJour || espaceData.prix || 0)
+        : 0,
+      amenities: espaceData.type === 'PRIVE'
+        ? (espaceData.amenities || []).join(', ')
+        : ''
+    };
+
+    // Réinitialisation complète du formulaire
+    this.editForm.reset(formValues);
+    
+    // Gestion de l'image
+    this.mainPhotoPreview = espaceData.photoPrincipal || null;
+    
+    this.modalService.open(content, { ariaLabelledBy: 'edit-space-modal', size: 'lg' });
+}
 
   onMainPhotoSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
       this.mainPhoto = file;
-      
       const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.mainPhotoPreview = e.target.result;
+      reader.onload = () => {
+        this.mainPhotoPreview = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
   }
 
-  removeMainPhoto(): void {
-    this.mainPhoto = null;
-    this.mainPhotoPreview = null;
-    if (this.currentSpace?.photo) {
-      this.imagesToDelete.push(this.currentSpace.photo);
-    }
-  }
-
   onGallerySelected(event: any): void {
     const files = event.target.files;
-    if (files) {
+    if (files && files.length > 0) {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         this.selectedImages.push(file);
@@ -192,130 +200,226 @@ export class SpacesManagementComponent implements OnInit {
     }
   }
 
+  removeMainPhoto(): void {
+    this.mainPhoto = undefined;
+    this.mainPhotoPreview = null;
+    if (this.currentEspace?.photoPrincipal) {
+      this.imagesToDelete.push(this.currentEspace.photoPrincipal);
+    }
+  }
+
   removeGalleryImage(index: number): void {
-    this.previewImages.splice(index, 1);
     this.selectedImages.splice(index, 1);
+    this.previewImages.splice(index, 1);
   }
 
   removeExistingGalleryImage(index: number): void {
-    if (this.currentSpace?.gallery && this.currentSpace.gallery.length > index) {
-      this.imagesToDelete.push(this.currentSpace.gallery[index]);
-      this.currentSpace.gallery.splice(index, 1);
-      if (this.currentSpace.galleryUrls) {
-        this.currentSpace.galleryUrls.splice(index, 1);
-      }
+    if (this.currentEspace?.gallery?.[index]) {
+      this.imagesToDelete.push(this.currentEspace.gallery[index]);
+      this.currentEspace.gallery.splice(index, 1);
     }
   }
 
-  addSpace(): void {
-    if (this.spaceForm.invalid) {
-      Swal.fire('Error', 'Please fill all required fields', 'error');
-      return;
-    }
-  
-    if (!this.mainPhoto) {
-      Swal.fire('Error', 'Main photo is required', 'error');
-      return;
-    }
-  
-    const spaceData = {
-      ...this.spaceForm.value,
-      amenityIds: this.selectedAmenities
-    };
-  
-    this.isUploading = true;
-    this.spaceService.createSpace(spaceData, this.mainPhoto, this.selectedImages).subscribe({
-      next: (newSpace) => {
-        this.spaces.push(newSpace);
-        this.filteredSpaces = [...this.spaces];
-        this.modalService.dismissAll();
-        Swal.fire('Success', 'Space created successfully', 'success');
-      },
-      error: (err) => {
-        console.error('Error creating space:', err);
-        Swal.fire('Error', 'Failed to create space', 'error');
-      },
-      complete: () => {
-        this.isUploading = false;
-      }
+  clearImages(): void {
+    this.selectedImages = [];
+    this.previewImages = [];
+    this.mainPhoto = undefined;
+    this.mainPhotoPreview = null;
+    this.imagesToDelete = [];
+  }
+
+  resetForms(): void {
+    this.espaceForm.reset({
+      type: 'PRIVE',
+      capacity: 1,
+      isActive: true
+    });
+    this.editForm.reset({
+      type: 'PRIVE',
+      capacity: 1,
+      isActive: true
     });
   }
 
-  updateSpace(): void {
-    if (!this.currentSpace || this.editForm.invalid) {
-      Swal.fire('Error', 'Invalid form data', 'error');
-      return;
+  addEspace(): void {
+  if (this.espaceForm.invalid || !this.mainPhoto) {
+    this.toastr.warning('Veuillez remplir tous les champs obligatoires', 'Formulaire invalide');
+    return;
+  }
+
+  this.isUploading = true;
+
+  const espaceData: any = {
+    name: this.espaceForm.value.name,
+    description: this.espaceForm.value.description,
+    capacity: this.espaceForm.value.capacity,
+    type: this.espaceForm.value.type,
+    isActive: this.espaceForm.value.isActive,
+    photoPrincipal: '',
+    gallery: [] 
+  };
+
+  // Add private space specific fields if needed
+  if (this.espaceForm.value.type === 'PRIVE') {
+    espaceData.prixParJour = this.espaceForm.value.prixParJour;
+    espaceData.amenities = this.espaceForm.value.amenities?.split(',').map((item: string) => item.trim()) || [];
+  }
+
+  const createObservable = this.espaceForm.value.type === 'PRIVE' 
+    ? this.espaceService.createEspacePrive(espaceData, this.mainPhoto, this.selectedImages)
+    : this.espaceService.createEspaceOuvert(espaceData, this.mainPhoto, this.selectedImages);
+
+  createObservable.subscribe({
+    next: (createdEspace) => {
+      this.espaces.push({
+        ...createdEspace,
+        photoPrincipal: createdEspace.photoPrincipal 
+          ? `${environment.apiUrl}${createdEspace.photoPrincipal}`
+          : 'assets/images/default-space.jpg',
+        gallery: createdEspace.gallery?.map(img => `${environment.apiUrl}${img}`) || []
+      });
+      this.filteredEspaces = [...this.espaces];
+      this.modalService.dismissAll();
+      this.isUploading = false;
+      this.toastr.success('Espace créé avec succès', 'Succès');
+    },
+    error: (err) => {
+      console.error('Error creating space:', err);
+      this.isUploading = false;
+      this.toastr.error(err.error?.message || err.message || 'Erreur lors de la création', 'Erreur');
     }
-  
-    const spaceData = {
-      ...this.editForm.value,
-      amenityIds: this.selectedAmenities
-    };
-  
-    this.isUploading = true;
-    this.spaceService.updateSpace(
-      this.currentSpace.id, 
-      spaceData, 
-      this.mainPhoto || undefined, 
-      this.selectedImages
-    ).subscribe({
-      next: (updatedSpace) => {
-        const index = this.spaces.findIndex(s => s.id === updatedSpace.id);
+  });
+}
+
+  updateEspace(): void {
+  if (!this.currentEspace || this.editForm.invalid) {
+    this.toastr.warning('Veuillez vérifier les informations', 'Formulaire invalide');
+    return;
+  }
+
+  this.isUploading = true;
+
+  // Créer l'objet DTO de base
+  const baseEspace = {
+    name: this.editForm.value.name,
+    description: this.editForm.value.description,
+    capacity: this.editForm.value.capacity,
+    type: this.editForm.value.type,
+    isActive: this.editForm.value.isActive,
+    photoPrincipal: this.currentEspace.photoPrincipal?.replace(`${environment.apiUrl}`, '') || '',
+    gallery: this.currentEspace.gallery?.map(img => img.replace(`${environment.apiUrl}`, '')) || []
+  };
+
+  let espaceData: EspacePriveDTO | EspaceOuvertDTO;
+
+  if (this.editForm.value.type === 'PRIVE') {
+    espaceData = {
+      ...baseEspace,
+      prixParJour: this.editForm.value.prixParJour,
+      amenities: this.editForm.value.amenities?.split(',').map((item: string) => item.trim()) || []
+    } as EspacePriveDTO;
+  } else {
+    espaceData = baseEspace as EspaceOuvertDTO;
+  }
+
+  const updateObservable = this.editForm.value.type === 'PRIVE'
+    ? this.espaceService.updateEspacePrive(
+        this.currentEspace.id!, 
+        espaceData as EspacePriveDTO, 
+        this.mainPhoto, 
+        this.selectedImages,
+        this.imagesToDelete
+      )
+    : this.espaceService.updateEspaceOuvert(
+        this.currentEspace.id!, 
+        espaceData as EspaceOuvertDTO, 
+        this.mainPhoto, 
+        this.selectedImages,
+        this.imagesToDelete
+      );
+
+  updateObservable.subscribe({
+    next: (updatedEspace) => {
+      const index = this.espaces.findIndex(e => e.id === updatedEspace.id);
+      if (index !== -1) {
+        this.espaces[index] = {
+          ...updatedEspace,
+          photoPrincipal: updatedEspace.photoPrincipal 
+            ? `${environment.apiUrl}${updatedEspace.photoPrincipal}`
+            : 'assets/images/default-space.jpg',
+          gallery: updatedEspace.gallery?.map(img => `${environment.apiUrl}${img}`) || []
+        };
+        this.filteredEspaces = [...this.espaces];
+      }
+      this.modalService.dismissAll();
+      this.isUploading = false;
+      this.toastr.success('Espace mis à jour', 'Succès');
+    },
+    error: (err) => {
+      console.error('Error updating space:', err);
+      this.isUploading = false;
+      this.toastr.error(err.error?.message || 'Erreur lors de la mise à jour', 'Erreur');
+    }
+  });
+}
+
+openDeleteConfirmation(content: any, espace: EspaceDTO): void {
+  this.currentEspace = espace;
+  this.modalService.open(content);
+}
+   
+// Supprimez la méthode deleteEspace existante et gardez seulement :
+deleteEspace(espace: EspaceDTO): void {
+  this.currentEspace = espace;
+  this.modalService.open(this.deleteSpaceModal);
+}
+
+performDelete(): void {
+  if (!this.currentEspace || !this.currentEspace.id) return;
+
+  const deleteObservable = this.currentEspace.type === 'PRIVE'
+    ? this.espaceService.deleteEspacePrive(this.currentEspace.id)
+    : this.espaceService.deleteEspaceOuvert(this.currentEspace.id);
+
+  deleteObservable.subscribe({
+    next: () => {
+      this.espaces = this.espaces.filter(e => e.id !== this.currentEspace?.id);
+      this.filteredEspaces = this.filteredEspaces.filter(e => e.id !== this.currentEspace?.id);
+      this.toastr.success('Espace supprimé avec succès', 'Succès');
+    },
+    error: (err) => {
+      this.toastr.error(err.error?.message || 'Erreur lors de la suppression', 'Erreur');
+    }
+  });
+}
+
+  toggleEspaceStatus(espace: EspaceDTO): void {
+    const updatedEspace = { ...espace, isActive: !espace.isActive };
+    const updateObservable = espace.type === 'PRIVE'
+      ? this.espaceService.updateEspacePrive(espace.id!, updatedEspace as any)
+      : this.espaceService.updateEspaceOuvert(espace.id!, updatedEspace as any);
+
+    updateObservable.subscribe({
+      next: (result) => {
+        const index = this.espaces.findIndex(e => e.id === result.id);
         if (index !== -1) {
-          this.spaces[index] = updatedSpace;
-          this.filteredSpaces = [...this.spaces];
+          this.espaces[index].isActive = result.isActive;
+          this.filteredEspaces = [...this.espaces];
         }
-        this.modalService.dismissAll();
-        Swal.fire('Success', 'Space updated successfully', 'success');
+        this.toastr.success('Statut de l\'espace mis à jour', 'Succès');
       },
       error: (err) => {
-        console.error('Error updating space:', err);
-        Swal.fire('Error', err.error?.message || 'Failed to update space', 'error');
-      },
-      complete: () => {
-        this.isUploading = false;
+        this.toastr.error(err.error?.message || 'Erreur lors de la modification', 'Erreur');
       }
     });
   }
 
-  deleteSpace(spaceId: number): void {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'This action cannot be undone!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.spaceService.deleteSpace(spaceId).subscribe({
-          next: () => {
-            this.spaces = this.spaces.filter(s => s.id !== spaceId);
-            this.filteredSpaces = this.filteredSpaces.filter(s => s.id !== spaceId);
-            Swal.fire('Deleted!', 'Space has been deleted.', 'success');
-          },
-          error: (err) => {
-            Swal.fire('Error', err.error?.message || 'Failed to delete space', 'error');
-          }
-        });
-      }
-    });
+  getTypeBadgeClass(type: string): string {
+    return type === 'PRIVE' ? 'bg-primary' : 'bg-success';
   }
 
-  toggleSpaceStatus(space: PrivateSpace): void {
-    this.spaceService.toggleSpaceStatus(space.id).subscribe({
-      next: (updatedSpace) => {
-        const index = this.spaces.findIndex(s => s.id === updatedSpace.id);
-        if (index !== -1) {
-          this.spaces[index].isActive = updatedSpace.isActive;
-        }
-        Swal.fire('Success', 'Space status updated', 'success');
-      },
-      error: (err) => {
-        Swal.fire('Error', err.error?.message || 'Failed to update status', 'error');
-      }
-    });
+  getTypeText(type: string): string {
+    return type === 'PRIVE' ? 'Privé' : 'Ouvert';
   }
 
   getStatusBadgeClass(isActive: boolean): string {
@@ -323,6 +427,24 @@ export class SpacesManagementComponent implements OnInit {
   }
 
   getStatusText(isActive: boolean): string {
-    return isActive ? 'Active' : 'Inactive';
+    return isActive ? 'Actif' : 'Inactif';
   }
+
+  getPrixParJour(espace: EspaceDTO): string {
+  // Pour les espaces privés
+  if (espace.type === 'PRIVE') {
+    const priveEspace = espace as EspacePriveDTO;
+    
+    // Si prixParJour existe et est > 0
+    if (priveEspace.prixParJour && priveEspace.prixParJour > 0) {
+      return `${priveEspace.prixParJour} TND/j`;
+    }
+    
+    // Si prixParJour est 0 ou non défini
+    return 'Gratuit';
+  }
+  
+  // Pour les espaces ouverts
+  return 'Abonnement';
+}
 }

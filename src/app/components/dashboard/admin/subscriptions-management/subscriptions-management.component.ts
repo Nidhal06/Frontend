@@ -1,10 +1,10 @@
 import { Component, OnInit, TemplateRef } from '@angular/core';
-import { SubscriptionService, Subscription, SubscriptionPlan } from 'src/app/services/subscription.service';
-import { UserService } from 'src/app/services/user.service';
-import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { AbonnementDTO, EspaceOuvertDTO, UserDTO } from '../../../../types/entities';
+import { AbonnementService } from '../../../../services/abonnement.service';
+import { EspaceService } from '../../../../services/espace.service';
+import { UserService } from '../../../../services/user.service';
 import { ToastrService } from 'ngx-toastr';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import * as moment from 'moment';
 
 @Component({
   selector: 'app-subscriptions-management',
@@ -12,209 +12,196 @@ import * as moment from 'moment';
   styleUrls: ['./subscriptions-management.component.css']
 })
 export class SubscriptionsManagementComponent implements OnInit {
-  subscriptions: Subscription[] = [];
-  filteredSubscriptions: Subscription[] = [];
+  abonnements: AbonnementDTO[] = [];
+  espacesOuverts: EspaceOuvertDTO[] = [];
+  users: UserDTO[] = [];
   modalRef?: BsModalRef;
-  subscriptionForm: FormGroup;
-  currentSubscriptionId: number | null = null;
-  subscriptionTypes = ['INDIVIDUAL', 'TEAM'];
-  billingCycles = ['MONTHLY', 'YEARLY'];
-  users: any[] = [];
-  subscriptionPlans: SubscriptionPlan[] = [];
-  searchTerm: string = '';
-  statusFilter: string = 'ALL';
-  typeFilter: string = 'ALL';
+  
+  currentAbonnement: AbonnementDTO = {
+    type: 'MENSUEL',
+    prix: 0,
+    dateDebut: new Date().toISOString().split('T')[0],
+    dateFin: '',
+    userId: 0,
+    userEmail: '',
+    espaceOuvertId: 0,
+    espaceOuvertName: ''
+  };
+  isEditMode = false;
+  searchTerm = '';
 
   constructor(
-    private subscriptionService: SubscriptionService,
+    private abonnementService: AbonnementService,
+    private espaceService: EspaceService,
     private userService: UserService,
     private modalService: BsModalService,
-    private toastr: ToastrService,
-    private fb: FormBuilder
-  ) {
-    this.subscriptionForm = this.fb.group({
-      userId: ['', Validators.required],
-      name: ['', Validators.required],
-      startDate: ['', Validators.required],
-      endDate: ['', Validators.required],
-      price: ['', [Validators.required, Validators.min(0)]],
-      type: ['', Validators.required],
-      billingCycle: ['', Validators.required],
-      maxWorkspaces: ['', [Validators.required, Validators.min(1)]],
-      includedHours: ['', [Validators.required, Validators.min(0)]],
-      hourlyRate: ['', [Validators.required, Validators.min(0)]]
+    private toastr: ToastrService
+  ) { }
+
+  ngOnInit(): void {
+    this.loadAbonnements();
+    this.loadEspacesOuverts();
+    this.loadUsers();
+  }
+
+  loadAbonnements(): void {
+    this.abonnementService.getAllAbonnements().subscribe({
+      next: (data) => {
+        this.abonnements = data;
+      },
+      error: (err) => {
+        this.toastr.error('Erreur lors du chargement des abonnements');
+      }
     });
   }
 
-  ngOnInit(): void {
-    this.loadSubscriptions();
-    this.loadUsers();
-    this.loadSubscriptionPlans();
-  }
-
-  loadSubscriptions(): void {
-    this.subscriptionService.getAllSubscriptions().subscribe({
+  loadEspacesOuverts(): void {
+    this.espaceService.getAllEspaceOuverts().subscribe({
       next: (data) => {
-        this.subscriptions = data;
-        this.filteredSubscriptions = [...data];
-        this.applyFilters();
+        this.espacesOuverts = data;
       },
-      error: (err) => this.toastr.error('Erreur lors du chargement des abonnements')
+      error: (err) => {
+        this.toastr.error('Erreur lors du chargement des espaces ouverts');
+      }
     });
   }
 
   loadUsers(): void {
     this.userService.getAllUsers().subscribe({
-      next: (data) => this.users = data,
-      error: (err) => this.toastr.error('Erreur lors du chargement des utilisateurs')
-    });
-  }
-
-  loadSubscriptionPlans(): void {
-    this.subscriptionService.getAvailablePlans().subscribe({
-      next: (data) => this.subscriptionPlans = data,
-      error: (err) => this.toastr.error('Erreur lors du chargement des plans d\'abonnement')
+      next: (data) => {
+        this.users = data;
+      },
+      error: (err) => {
+        this.toastr.error('Erreur lors du chargement des utilisateurs');
+      }
     });
   }
 
   openAddModal(template: TemplateRef<any>): void {
-    this.currentSubscriptionId = null;
-    this.subscriptionForm.reset();
-    this.modalRef = this.modalService.show(template, { class: 'modal-lg' });
-  }
-
-  openEditModal(template: TemplateRef<any>, subscription: Subscription): void {
-    this.currentSubscriptionId = subscription.id;
-    this.subscriptionForm.patchValue({
-      userId: subscription.user.id,
-      name: subscription.name,
-      startDate: moment(subscription.startDate).format('YYYY-MM-DD'),
-      endDate: moment(subscription.endDate).format('YYYY-MM-DD'),
-      price: subscription.price,
-      type: subscription.type,
-      billingCycle: subscription.billingCycle,
-      maxWorkspaces: subscription.maxWorkspaces,
-      includedHours: subscription.includedHours,
-      hourlyRate: subscription.hourlyRate
-    });
-    this.modalRef = this.modalService.show(template, { class: 'modal-lg' });
-  }
-
-  saveSubscription(): void {
-    if (this.subscriptionForm.invalid) {
-      this.toastr.warning('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-
-    const subscriptionData = this.subscriptionForm.value;
-
-    if (this.currentSubscriptionId) {
-      this.subscriptionService.updateSubscription(this.currentSubscriptionId, subscriptionData).subscribe({
-        next: () => {
-          this.toastr.success('Abonnement mis à jour avec succès');
-          this.loadSubscriptions();
-          this.modalRef?.hide();
-        },
-        error: (err) => this.toastr.error('Erreur lors de la mise à jour de l\'abonnement')
-      });
-    } else {
-      this.subscriptionService.createSubscription(subscriptionData).subscribe({
-        next: () => {
-          this.toastr.success('Abonnement créé avec succès');
-          this.loadSubscriptions();
-          this.modalRef?.hide();
-        },
-        error: (err) => this.toastr.error('Erreur lors de la création de l\'abonnement')
-      });
-    }
-  }
-
-  cancelSubscription(id: number): void {
-    if (confirm('Êtes-vous sûr de vouloir annuler cet abonnement ?')) {
-      this.subscriptionService.cancelSubscription(id).subscribe({
-        next: () => {
-          this.toastr.success('Abonnement annulé avec succès');
-          this.loadSubscriptions();
-        },
-        error: (err) => this.toastr.error('Erreur lors de l\'annulation de l\'abonnement')
-      });
-    }
-  }
-
-  deleteSubscription(id: number): void {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet abonnement ? Cette action est irréversible.')) {
-      this.subscriptionService.deleteSubscription(id).subscribe({
-        next: () => {
-          this.toastr.success('Abonnement supprimé avec succès');
-          this.loadSubscriptions();
-        },
-        error: (err) => this.toastr.error('Erreur lors de la suppression de l\'abonnement')
-      });
-    }
-  }
-
-  applyFilters(): void {
-    this.filteredSubscriptions = this.subscriptions.filter(sub => {
-      const matchesSearch = this.searchTerm === '' || 
-        sub.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        sub.user.username.toLowerCase().includes(this.searchTerm.toLowerCase());
-      
-      const matchesStatus = this.statusFilter === 'ALL' || sub.status === this.statusFilter;
-      const matchesType = this.typeFilter === 'ALL' || sub.type === this.typeFilter;
-      
-      return matchesSearch && matchesStatus && matchesType;
-    });
-  }
-
-  getTypeName(type: string): string {
-    return type === 'INDIVIDUAL' ? 'Individuel' : 'Équipe';
-  }
-  getBillingCycleName(cycle: string): string {
-    return cycle === 'MONTHLY' ? 'Mensuel' : 'Annuel';
-  }
-
-  onPlanSelect(event: Event): void {
-    const selectElement = event.target as HTMLSelectElement;
-    const selectedIndex = selectElement.selectedIndex;
-    
-    if (selectedIndex > 0) {
-        const selectedPlan = this.subscriptionPlans[selectedIndex - 1];
-        this.subscriptionForm.patchValue({
-            name: selectedPlan.name,
-            type: selectedPlan.type,
-            billingCycle: selectedPlan.billingCycle,
-            price: selectedPlan.price,
-            maxWorkspaces: this.getDefaultWorkspaces(selectedPlan.type),
-            includedHours: this.getDefaultHours(selectedPlan.type),
-            hourlyRate: this.getDefaultHourlyRate(selectedPlan.type)
-        });
-    }
+    this.isEditMode = false;
+    this.currentAbonnement = {
+      type: 'MENSUEL',
+      prix: 0,
+      dateDebut: new Date().toISOString().split('T')[0],
+      dateFin: '',
+      userId: 0,
+      userEmail: '',
+      espaceOuvertId: 0,
+      espaceOuvertName: ''
+    };
+    this.modalRef = this.modalService.show(template);
 }
 
-  private getDefaultWorkspaces(type: string): number {
-    return type === 'INDIVIDUAL' ? 1 : 5;
-  }
+openAddForAllModal(template: TemplateRef<any>): void {
+    this.currentAbonnement = {
+      type: 'MENSUEL',
+      prix: 0,
+      dateDebut: new Date().toISOString().split('T')[0],
+      dateFin: '',
+      userId: 0,
+      userEmail: '',
+      espaceOuvertId: 0,
+      espaceOuvertName: ''
+    };
+    this.modalRef = this.modalService.show(template);
+}
 
-  private getDefaultHours(type: string): number {
-    return type === 'INDIVIDUAL' ? 80 : 200;
-  }
+openEditModal(template: TemplateRef<any>, abonnement: AbonnementDTO): void {
+    this.isEditMode = true;
+    this.currentAbonnement = { ...abonnement };
+    this.modalRef = this.modalService.show(template);
+}
 
-  private getDefaultHourlyRate(type: string): number {
-    return type === 'INDIVIDUAL' ? 10 : 15;
-  }
-
-  getStatusClass(status: string): string {
-    switch(status) {
-      case 'ACTIVE': return 'bg-success';
-      case 'EXPIRED': return 'bg-secondary';
-      case 'CANCELLED': return 'bg-warning';
-      case 'PENDING_PAYMENT': return 'bg-danger';
-      default: return 'bg-info';
+  saveAbonnement(): void {
+    if (this.isEditMode) {
+      this.abonnementService.updateAbonnement(this.currentAbonnement.id!, this.currentAbonnement).subscribe({
+        next: () => {
+          this.toastr.success('Abonnement mis à jour avec succès');
+          this.loadAbonnements();
+          this.modalRef?.hide();
+        },
+        error: (err) => {
+          this.toastr.error('Erreur lors de la mise à jour de l\'abonnement');
+        }
+      });
+    } else {
+      this.abonnementService.createAbonnement(this.currentAbonnement).subscribe({
+        next: () => {
+          this.toastr.success('Abonnement créé avec succès');
+          this.loadAbonnements();
+          this.modalRef?.hide();
+        },
+        error: (err) => {
+          this.toastr.error('Erreur lors de la création de l\'abonnement');
+        }
+      });
     }
   }
 
-  getFormattedDate(dateString: string | null): string {
-    if (!dateString) return 'N/A';
-    return moment(dateString).format('DD/MM/YYYY');
+  saveAbonnementForAll(): void {
+    this.abonnementService.createAbonnementsForAllCoworkers(this.currentAbonnement).subscribe({
+      next: () => {
+        this.toastr.success('Abonnements créés avec succès pour tous les coworkers');
+        this.loadAbonnements();
+        this.modalRef?.hide();
+      },
+      error: (err) => {
+        this.toastr.error('Erreur lors de la création des abonnements');
+      }
+    });
+  }
+
+  deleteAbonnement(id: number): void {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet abonnement ?')) {
+      this.abonnementService.deleteAbonnement(id).subscribe({
+        next: () => {
+          this.toastr.success('Abonnement supprimé avec succès');
+          this.loadAbonnements();
+        },
+        error: (err) => {
+          this.toastr.error('Erreur lors de la suppression de l\'abonnement');
+        }
+      });
+    }
+  }
+
+  get filteredAbonnements(): AbonnementDTO[] {
+    return this.abonnements.filter(abonnement => {
+      const user = this.users.find(u => u.id === abonnement.userId);
+      const espace = this.espacesOuverts.find(e => e.id === abonnement.espaceOuvertId);
+      
+      const userSearch = user ? 
+        `${user.firstName} ${user.lastName}`.toLowerCase().includes(this.searchTerm.toLowerCase()) : false;
+      const espaceSearch = espace ? 
+        espace.name.toLowerCase().includes(this.searchTerm.toLowerCase()) : false;
+      const typeSearch = abonnement.type.toLowerCase().includes(this.searchTerm.toLowerCase());
+      
+      return userSearch || espaceSearch || typeSearch;
+    });
+  }
+
+  getUserName(userId: number): string {
+    const user = this.users.find(u => u.id === userId);
+    return user ? `${user.firstName} ${user.lastName}` : 'Inconnu';
+  }
+
+  getEspaceName(espaceId: number): string {
+    const espace = this.espacesOuverts.find(e => e.id === espaceId);
+    return espace ? espace.name : 'Inconnu';
+  }
+
+  calculateEndDate(): void {
+    if (this.currentAbonnement.dateDebut && this.currentAbonnement.type) {
+      const startDate = new Date(this.currentAbonnement.dateDebut);
+      const endDate = new Date(startDate);
+      
+      if (this.currentAbonnement.type === 'MENSUEL') {
+        endDate.setMonth(startDate.getMonth() + 1);
+      } else {
+        endDate.setFullYear(startDate.getFullYear() + 1);
+      }
+      
+      this.currentAbonnement.dateFin = endDate.toISOString().split('T')[0];
+    }
   }
 }

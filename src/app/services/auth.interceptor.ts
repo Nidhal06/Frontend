@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 import {
   HttpRequest,
@@ -18,9 +19,11 @@ export class AuthInterceptor implements HttpInterceptor {
     private router: Router
   ) {}
 
-  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // Get the auth token
     const token = this.authService.getToken();
     
+    // Clone the request and add the authorization header
     if (token) {
       request = request.clone({
         setHeaders: {
@@ -29,15 +32,15 @@ export class AuthInterceptor implements HttpInterceptor {
       });
     }
 
+    // Send the request and handle errors
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
+          // If 401, logout and redirect to login page
           this.authService.logout();
-          this.router.navigate(['/login']);
-        } else if (error.status === 403) {
-          // Handle 403 errors if needed
+          this.router.navigate(['/signin']);
         }
-        return throwError(() => error);
+        return throwError(error);
       })
     );
   }

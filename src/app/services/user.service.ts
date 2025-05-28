@@ -1,141 +1,43 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError , map } from 'rxjs/operators';
-import { AuthService } from './auth.service';
-import { environment } from './environments/environment';
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  profileImagePath: string;
-  roles: string[];
-  type: string;
-  enabled: boolean;
-  createdAt: Date;
-}
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../services/environments/environment';
+import { UserDTO } from '../types/entities';
+import { AuthService } from './auth.service';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = `${environment.apiUrl}/api/admin/users`;
-
   constructor(private http: HttpClient, private authService: AuthService) { }
 
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+  getAllUsers(): Observable<UserDTO[]> {
+    return this.http.get<UserDTO[]>(`${environment.apiUrl}/api/users`, {
+      headers: this.authService.getAuthHeaders()
     });
   }
 
-  private handleError(error: any) {
-    console.error('An error occurred:', error);
-    return throwError(() => error);
-  }
-
-  getAllUsers(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl, { headers: this.getHeaders() })
-      .pipe(catchError(this.handleError));
-  }
-
-  getUserById(id: number): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() })
-      .pipe(catchError(this.handleError));
-  }
-
-createUser(userData: any): Observable<User> {
-  return this.http.post<User>(this.apiUrl, userData, { 
-    headers: this.getHeaders(),
-    observe: 'response'
-  }).pipe(
-    map(response => {
-      if (!response.body) {
-        throw new Error('No response body received');
-      }
-      return response.body;
-    }),
-    catchError(error => {
-      console.error('Create user error details:', error);
-      
-      let errorMessage = 'An error occurred while creating the user';
-      if (error.error?.message) {
-        errorMessage = error.error.message;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      return throwError(() => new Error(errorMessage));
-    })
+  getUserById(id: number): Observable<UserDTO> {
+  return this.http.get<UserDTO>(
+    `${environment.apiUrl}/api/users/${id}`,
+    { headers: this.authService.getAuthHeaders() }
   );
 }
 
-  updateUser(id: number, userData: any): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/${id}`, userData, { 
-      headers: this.getHeaders(),
-      observe: 'response'
-    }).pipe(
-      map(response => {
-        if (!response.body) {
-          throw new Error('No response body received');
-        }
-        return response.body;
-      }),
-      catchError(error => {
-        console.error('Update error details:', error);
-        
-        let errorMessage = 'An error occurred while updating the user';
-        if (error.error?.message) {
-          errorMessage = error.error.message;
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-        
-        return throwError(() => new Error(errorMessage));
-      })
-    );
-  }
-  
-  toggleUserStatus(id: number): Observable<User> {
-    return this.http.patch<User>(
-      `${this.apiUrl}/${id}/toggle-status`, 
-      {}, 
-      { 
-        headers: this.getHeaders(),
-        observe: 'response'
-      }
-    ).pipe(
-      map(response => {
-        if (!response.body) {
-          throw new Error('No response body received');
-        }
-        return response.body;
-      }),
-      catchError(error => {
-        console.error('Toggle status error:', error);
-        
-        let errorMessage = 'Error changing user status';
-        if (error.error?.message) {
-          errorMessage = error.error.message;
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-        
-        return throwError(() => new Error(errorMessage));
-      })
-    );
+  createUser(user: UserDTO): Observable<UserDTO> {
+    return this.http.post<UserDTO>(`${environment.apiUrl}/api/users`, user);
   }
 
-  deleteUser(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { 
-      headers: this.getHeaders(),
-      observe: 'response'
-    }).pipe(catchError(this.handleError));
+  updateUser(id: number, user: UserDTO): Observable<UserDTO> {
+    return this.http.put<UserDTO>(`${environment.apiUrl}/api/users/${id}`, user);
+  }
+
+  toggleUserStatus(id: number): Observable<UserDTO> {
+    return this.http.patch<UserDTO>(`${environment.apiUrl}/api/users/${id}/toggle-status`, {});
+  }
+
+  deleteUser(id: number): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/api/users/${id}`);
   }
 }

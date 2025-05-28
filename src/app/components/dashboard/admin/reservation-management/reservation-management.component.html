@@ -1,0 +1,149 @@
+<div class="container-fluid py-4">
+  <!-- Modal de confirmation -->
+  <ng-template #actionModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title" id="actionModalLabel">Confirmation</h5>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <p>Que souhaitez-vous faire avec cette réservation ?</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-success" (click)="updateReservationStatus('VALIDEE'); modal.close()">
+        Valider
+      </button>
+      <button type="button" class="btn btn-danger" (click)="updateReservationStatus('ANNULEE'); modal.close()">
+        Annuler
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">
+        Fermer
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Modal de suppression -->
+  <ng-template #deleteModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Confirmation de suppression</h5>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      Êtes-vous sûr de vouloir supprimer définitivement cette réservation ?
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-danger" (click)="deleteReservation(); modal.close()">
+        Confirmer
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+        Annuler
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Bouton retour -->
+  <div class="mb-3">
+    <a routerLink="/admin-dashboard" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Retour au tableau de bord
+    </a>
+  </div>
+
+  <!-- En-tête -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+    <div class="mb-3 mb-md-0">
+      <h1 class="h2 mb-2">Réservations & Planning</h1>
+      <p class="mb-0 text-muted">Consulter et gérer les réservations actuelles et futures.</p>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Statut</label>
+          <select class="form-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+            <option value="TOUS">Tous les statuts</option>
+            <option value="EN_ATTENTE">En attente</option>
+            <option value="VALIDEE">Validée</option>
+            <option value="ANNULEE">Annulée</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Recherche</label>
+          <input type="text" class="form-control" placeholder="Nom, email ou espace..." 
+                 [(ngModel)]="searchTerm" (input)="applyFilters()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-2">Chargement des réservations...</p>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Liste des réservations -->
+  <div *ngIf="!isLoading && !errorMessage">
+    <div *ngIf="filteredReservations.length === 0" class="alert alert-info" role="alert">
+      Aucune réservation trouvée avec ces critères.
+    </div>
+
+    <div *ngIf="filteredReservations.length > 0" class="card shadow-sm">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Utilisateur</th>
+                <th>Espace</th>
+                <th>Date début</th>
+                <th>Date fin</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let reservation of filteredReservations">
+                <td>
+                  {{ reservation.userFirstName }} {{ reservation.userLastName }}
+                  <small class="d-block text-muted">{{ reservation.userEmail }}</small>
+                </td>
+                <td>
+                  {{ reservation.espaceName }}
+                  <small class="d-block text-muted">{{ reservation.espaceType | lowercase }}</small>
+                </td>
+                <td>{{ formatDate(reservation.dateDebut) }}</td>
+                <td>{{ formatDate(reservation.dateFin) }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusBadgeClass(reservation.statut)">
+                    {{ reservation.statut | lowercase }}
+                  </span>
+                </td>
+                <td>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" 
+                            (click)="openActionModal(reservation.id!, actionModal)">
+                      <i class="bi bi-pencil"></i> Modifier
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" 
+                            (click)="openActionModal(reservation.id!, deleteModal)">
+                      <i class="bi bi-trash"></i> Supprimer
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

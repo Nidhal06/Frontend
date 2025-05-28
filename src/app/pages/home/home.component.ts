@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { SpaceService } from '../../services/space.service';
-import { EventService } from 'src/app/services/event.service';
-import { Event } from 'src/app/services/event.model';
+import { EspaceService } from '../../services/espace.service';
+import { EvenementService } from '../../services/evenement.service';
+import { EspaceDTO, EspaceOuvertDTO, EspacePriveDTO, EvenementDTO } from '../../types/entities';
+import { environment } from '../../services/environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -78,68 +79,101 @@ export class HomeComponent implements OnInit {
     },
   ];
 
-  featuredSpaces: any[] = [];
-  featuredEvents: Event[] = [];
+  featuredSpaces: (EspaceDTO | EspacePriveDTO | EspaceOuvertDTO)[] = [];
+  featuredEvents: EvenementDTO[] = [];
+  isLoading = true;
+  spaceRatings: {[key: number]: number} = {};
+  environment = environment;
 
-  constructor(private spaceService: SpaceService , private eventService: EventService) {}
+  constructor(
+    private espaceService: EspaceService,
+    private evenementService: EvenementService
+  ) { }
 
   ngOnInit(): void {
     this.loadFeaturedSpaces();
     this.loadFeaturedEvents();
   }
 
-  loadFeaturedSpaces(): void {
-    this.spaceService.getAllSpaces().subscribe({
-      next: (spaces) => {
-        // Trier les espaces par popularité (supposons qu'il y ait un champ 'views' ou 'bookings')
-        // Si vous n'avez pas de champ de popularité, vous pouvez simplement prendre les 3 premiers actifs
-        this.featuredSpaces = spaces
-          .filter(space => space.isActive)
-          .sort((a, b) => (b.views || 0) - (a.views || 0)) // Tri décroissant par popularité
-          .slice(0, 3)
-          .map(space => ({
-            id: space.id,
-            title: space.name,
-            type: this.getSpaceType(space),
-            location: space.location || 'Tunis',
-            capacity: space.capacity,
-            price: space.pricePerDay,
-            priceUnit: 'jour',
-            rating: space.rating || 4.5, // Valeur par défaut si pas de rating
-            imageUrl: space.photo || 'assets/images/default-space.jpg'
-          }));
+ loadFeaturedSpaces(): void {
+  this.espaceService.getAllEspaces().subscribe({
+    next: (espaces) => {
+      this.featuredSpaces = espaces.slice(0, 3).map(espace => {
+        // Nettoyer l'URL de la photo principale
+        let cleanedPhoto = espace.photoPrincipal;
+        if (cleanedPhoto) {
+          cleanedPhoto = cleanedPhoto.replace(/^http:\/\/localhost:1010/, '');
+          if (!cleanedPhoto.startsWith('/')) {
+            cleanedPhoto = '/' + cleanedPhoto;
+          }
+        }
+
+        // Construire l'URL finale de l'image
+        const imageUrl = cleanedPhoto
+          ? `${environment.apiUrl}${cleanedPhoto}`
+          : this.getRandomSpaceImage();
+
+        // Générer une note aléatoire (pour démo)
+        const rating = Math.random() * 1 + 4;
+        this.spaceRatings[espace.id || 0] = parseFloat(rating.toFixed(1));
+
+        // Retourner l'espace avec les données réelles (y compris la capacité)
+        return {
+          ...espace,
+          photoPrincipal: imageUrl,
+          location: this.getRandomLocation()
+          // Ne pas écraser la capacité avec une valeur aléatoire
+        };
+      });
+    },
+    error: (error) => {
+      console.error('Error loading featured spaces:', error);
+      this.featuredSpaces = [];
+    }
+  });
+}
+
+
+  getSpaceRating(spaceId: number): number {
+    return this.spaceRatings[spaceId] || 0;
+  }
+
+  isPrivateSpace(space: EspaceDTO | EspacePriveDTO): space is EspacePriveDTO {
+  return space.type === 'PRIVE' && 'prixParJour' in space;
+}
+
+
+loadFeaturedEvents(): void {
+    this.isLoading = true;
+    this.evenementService.getAllEvenements().subscribe({
+      next: (events) => {
+        this.featuredEvents = events.map(event => ({
+          ...event,
+          participantsCount: event.participants?.length || 0,
+          startTime: event.startDate,
+          endTime: event.endDate,
+          title: event.titre,
+          space: {
+            name: event.espaceName
+          }
+        }));
+        this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error loading featured spaces:', err);
+        console.error('Error loading events:', err);
+        this.isLoading = false;
       }
     });
   }
-  
-  // Ajoutez cette méthode pour déterminer le type d'espace
-  private getSpaceType(space: any): string {
-    if (space.capacity <= 2) return 'Bureau privé';
-    if (space.capacity <= 6) return 'Espace partagé';
-    return 'Salle de réunion';
+
+  getProgressPercentage(event: EvenementDTO): number {
+    if (!event.maxParticipants || event.maxParticipants === 0) return 0;
+    const participantsCount = event.participants?.length || 0;
+    const percentage = (participantsCount / event.maxParticipants) * 100;
+    return Math.min(100, Math.round(percentage));
   }
 
-  loadFeaturedEvents(): void {
-    this.eventService.getAllEvents().subscribe({
-        next: (events) => {
-            const now = new Date();
-            this.featuredEvents = events
-                .filter(event => new Date(event.startTime) > now && event.isActive) 
-                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
-                .slice(0, 3); 
-        },
-        error: (err) => {
-            console.error('Error loading featured events:', err);
-            this.featuredEvents = [];
-        }
-    });
-}
-
-  // Ajoutez cette méthode utilitaire
-  private formatDate(dateString: string): string {
+public formatDate(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', {
       day: 'numeric',
@@ -148,14 +182,32 @@ export class HomeComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+}
+
+ // Méthodes utilitaires pour la démo
+  private getRandomSpaceImage(): string {
+    const images = [
+      'assets/images/space1.jpg',
+      'assets/images/space2.jpg',
+      'assets/images/space3.jpg'
+    ];
+    return images[Math.floor(Math.random() * images.length)];
   }
 
-    // Dans la classe HomeComponent
-registerToEvent(eventId: string): void {
-  // Ici vous pouvez implémenter la logique d'inscription
-  // Par exemple, rediriger vers une page d'inscription ou ouvrir un modal
+  private getRandomSpaceType(): 'OUVERT' | 'PRIVE' {
+    return Math.random() > 0.5 ? 'OUVERT' : 'PRIVE';
+  }
+
+  private getRandomLocation(): string {
+    const locations = ['Tunis'];
+    return locations[Math.floor(Math.random() * locations.length)];
+  }
+
+  private getRandomPrice(): number {
+    return Math.floor(Math.random() * 50) + 20;
+  }
+
+  registerToEvent(eventId: string): void {
   console.log(`Inscription à l'événement ${eventId}`);
-  // Vous pouvez aussi ajouter une notification/toast
-  // this.toastService.success('Inscription réussie !');
-}
+  }
 }

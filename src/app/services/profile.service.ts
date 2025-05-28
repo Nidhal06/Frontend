@@ -1,29 +1,33 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from './environments/environment';
-import { UserProfile } from './user-profile.model';
-
+import { environment } from '../services/environments/environment';
+import { ProfilDto, ProfileUpdateDTO } from '../types/entities';
+import { Observable, BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProfileService {
-  private apiUrl = `${environment.apiUrl}/api/profile`;
+  private profileUpdatedSubject = new BehaviorSubject<ProfilDto | null>(null);
+  profileUpdated$ = this.profileUpdatedSubject.asObservable();
 
   constructor(private http: HttpClient) { }
 
-  getProfile(): Observable<UserProfile> {
-    return this.http.get<UserProfile>(this.apiUrl);
+  getProfile(): Observable<ProfilDto> {
+    return this.http.get<ProfilDto>(`${environment.apiUrl}/api/profile`);
   }
 
-  updateProfile(profileData: any): Observable<UserProfile> {
-    return this.http.put<UserProfile>(this.apiUrl, profileData);
+  updateProfile(updateDTO: ProfileUpdateDTO): Observable<ProfilDto> {
+    return this.http.put<ProfilDto>(`${environment.apiUrl}/api/profile`, updateDTO);
   }
 
-  updateProfileImage(file: File): Observable<{ imagePath: string }> {
+  uploadProfileImage(file: File): Observable<string> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{ imagePath: string }>(`${this.apiUrl}/image`, formData);
-}
+    return this.http.post<string>(`${environment.apiUrl}/api/profile/image`, formData);
+  }
+
+  notifyProfileUpdate(profile: ProfilDto): void {
+    this.profileUpdatedSubject.next(profile);
+  }
 }

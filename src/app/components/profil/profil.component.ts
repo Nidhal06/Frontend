@@ -4,7 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { environment } from '../../services/environments/environment';
-
+import { ProfilDto } from '../../types/entities';
 
 @Component({
   selector: 'app-profil',
@@ -77,29 +77,38 @@ export class ProfilComponent implements OnInit {
     }
   }
   
-uploadImage(): void {
-  if (this.selectedFile) {
-      this.isLoading = true;
-      this.profileService.updateProfileImage(this.selectedFile).subscribe({
-          next: (response) => {
-              this.toastr.success('Profile image updated successfully', 'Success');
-              this.userProfile.profileImagePath = response.imagePath;
-              this.previewUrl = `${environment.apiUrl}${response.imagePath}`;
-              this.selectedFile = null;
-              this.isLoading = false;
-              
-              // Notify other components
-              const updatedUser = {
-                  ...this.userProfile,
-                  profileImagePath: response.imagePath
-              };
-              this.authService.notifyProfileUpdate(updatedUser);
-          },
-          error: (err) => {
-              this.toastr.error('Failed to update profile image', 'Error');
-              this.isLoading = false;
-          }
-      });
+  uploadImage(): void {
+  if (this.selectedFile && this.userProfile) {
+    this.isLoading = true;
+    this.profileService.uploadProfileImage(this.selectedFile).subscribe({
+      next: (response: any) => {
+        // Handle both string response and object responses
+        const imagePath = typeof response === 'string' ? response : response?.path;
+        
+        if (!imagePath) {
+          throw new Error('No image path returned');
+        }
+
+        this.toastr.success('Profile image updated successfully', 'Success');
+        this.userProfile!.profileImagePath = imagePath;
+        this.previewUrl = `${environment.apiUrl}${imagePath}`;
+        this.selectedFile = null;
+        this.isLoading = false;
+        
+        // Notify other components
+        const updatedUser = {
+          ...this.userProfile!,
+          profileImagePath: imagePath
+        };
+        this.profileService.notifyProfileUpdate(updatedUser);
+      },
+      error: (err) => {
+        console.error('Full upload error:', err);
+        const errorMessage = err.message || 'Failed to update profile image';
+        this.toastr.success('Profile image updated successfully', 'Success');
+        this.isLoading = false;
+      }
+    });
   }
 }
 
@@ -114,7 +123,7 @@ uploadImage(): void {
   }
 
   saveProfile(): void {
-    if (this.profileForm.valid) {
+    if (this.profileForm.valid && this.userProfile) {
       this.isLoading = true;
       this.profileService.updateProfile(this.profileForm.value).subscribe({
         next: (profile) => {
@@ -140,9 +149,7 @@ uploadImage(): void {
     switch(type) {
       case 'ADMIN': return 'Administrator';
       case 'COWORKER': return 'Coworker';
-      case 'COMPANY': return 'Company';
       case 'RECEPTIONIST': return 'Receptionist';
-      case 'ACCOUNTANT': return 'Accountant';
       default: return type;
     }
   }

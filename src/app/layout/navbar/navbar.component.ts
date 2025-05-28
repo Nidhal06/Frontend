@@ -1,8 +1,11 @@
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from 'src/app/services/auth.service';
+import { AuthService } from '../../services/auth.service';
+import { ProfileService } from '../../services/profile.service';
 import { Subscription } from 'rxjs';
-import { environment } from '../../services/environments/environment';
+import { ProfilDto } from '../../types/entities';
+import { environment } from 'src/app/services/environments/environment';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-navbar',
@@ -16,16 +19,19 @@ export class NavbarComponent implements OnInit, OnDestroy {
   username = '';
   userEmail = '';
   scrolled = false;
-  dashboardLink = ''; // Nouvelle propriété pour stocker le lien du dashboard
+  dashboardLink = '';
   private profileUpdateSubscription!: Subscription;
 
   constructor(
     public router: Router,
-    public authService: AuthService
+    private authService: AuthService,
+    private profileService: ProfileService,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
     this.checkAuthStatus();
+    this.onWindowScroll();
   }
 
   private checkAuthStatus(): void {
@@ -38,31 +44,43 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   private updateUserInfo(): void {
-    const user = this.authService.getCurrentUser();
-    this.username = user?.username || 'Utilisateur';
-    this.userEmail = user?.email || '';
-    this.profileImagePath = user?.profileImagePath 
-      ? `${environment.apiUrl}${user.profileImagePath}`
-      : '';
-  }
-
-  private setupProfileUpdates(): void {
-    this.profileUpdateSubscription = this.authService.profileUpdated$.subscribe(updatedUser => {
-      if (updatedUser) {
-        this.profileImagePath = updatedUser.profileImagePath 
-          ? `${environment.apiUrl}${updatedUser.profileImagePath}`
-          : '';
-        this.username = updatedUser.username || 'Utilisateur';
-        this.userEmail = updatedUser.email || '';
-        this.setDashboardLink();
+    this.profileService.getProfile().subscribe({
+      next: (profile: ProfilDto) => {
+        this.updateProfileInfo(profile);
+      },
+      error: (error) => {
+        console.error('Error fetching profile:', error);
+        this.toastr.error('Erreur lors du chargement du profil', 'Erreur');
       }
     });
   }
 
+  private setupProfileUpdates(): void {
+  this.profileUpdateSubscription = this.profileService.profileUpdated$.subscribe(
+    (updatedProfile: ProfilDto | null) => {
+      if (updatedProfile) {
+        this.updateProfileInfo(updatedProfile);
+      }
+    }
+  );
+}
+
+  private updateProfileInfo(profile: ProfilDto): void {
+    this.username = profile.username;
+    this.userEmail = profile.email;
+    this.profileImagePath = profile.profileImagePath 
+      ? `${environment.apiUrl}${profile.profileImagePath}` 
+      : '';
+  }
+
   private setDashboardLink(): void {
-    const user = this.authService.getCurrentUser();
-    const primaryRole = user?.roles?.[0] || ''; // Prend le premier rôle
-    this.dashboardLink = this.authService.getRoleBasedRedirectPath(primaryRole);
+    if (this.authService.isAdmin()) {
+      this.dashboardLink = '/admin-dashboard';
+    } else if (this.authService.isReceptionist()) {
+      this.dashboardLink = '/receptioniste-dashboard';
+    } else if (this.authService.isCoworker()) {
+      this.dashboardLink = '/coworker-dashboard';
+    }
   }
 
   ngOnDestroy(): void {
@@ -71,18 +89,19 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleMenu() {
+  toggleMenu(): void {
     this.isOpen = !this.isOpen;
   }
 
   @HostListener('window:scroll', [])
-  onWindowScroll() {
+  onWindowScroll(): void {
     this.scrolled = window.scrollY > 50;
   }
 
-  handleLogout() {
+  handleLogout(): void {
     this.authService.logout();
     this.isLoggedIn = false;
+    this.toastr.success('Déconnexion réussie', 'À bientôt !');
     this.router.navigate(['/signin']);
   }
 }

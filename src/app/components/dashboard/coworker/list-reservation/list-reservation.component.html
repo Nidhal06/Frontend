@@ -1,0 +1,148 @@
+
+<div class="container-fluid py-4">
+  <ng-template #cancelModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Confirmation d'annulation</h5>
+      <button
+        type="button"
+        class="btn-close"
+        aria-label="Close"
+        (click)="modal.dismiss()"
+      ></button>
+    </div>
+    <div class="modal-body">
+      Êtes-vous sûr de vouloir annuler cette réservation ?
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+        Non
+      </button>
+      <button
+        type="button"
+        class="btn btn-danger"
+        (click)="confirmCancel(); modal.close()"
+      >
+        Oui, annuler
+      </button>
+    </div>
+  </ng-template>
+  <div class="mb-3">
+    <a routerLink="/coworker-dashboard" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Retour au tableau de bord
+    </a>
+  </div>
+
+  <div
+    class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4"
+  >
+    <div class="mb-3 mb-md-0">
+      <h1 class="h2 mb-2">Mes réservations</h1>
+      <p class="mb-0 text-muted">
+        Consultez vos réservations passées et à venir
+      </p>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-2">Chargement des réservations...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage">
+    <div
+      *ngIf="reservations.length === 0"
+      class="alert alert-info"
+      role="alert"
+    >
+      Vous n'avez aucune réservation pour le moment.
+    </div>
+
+    <div *ngIf="reservations.length > 0" class="card shadow-sm">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Espace</th>
+                <th>Type</th>
+                <th>Date début</th>
+                <th>Date fin</th>
+                <th>Montant</th>
+                <th>Statut</th>
+                <th>Paiement</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let reservation of reservations">
+                <td>
+                  <strong>{{ reservation.espaceName }}</strong>
+                </td>
+                <td>
+                  {{ reservation.espaceType === "OUVERT" ? "Ouvert" : "Privé" }}
+                </td>
+                <td>{{ formatDate(reservation.dateDebut) }}</td>
+                <td>{{ formatDate(reservation.dateFin) }}</td>
+                <td>
+                  <span
+                    *ngIf="
+                      reservation.espaceType === 'OUVERT';
+                      else privatePrice
+                    "
+                  >
+                    {{ reservation.paiementMontant | number }} TND
+                  </span>
+                  <ng-template #privatePrice>
+                    {{ reservation.paiementMontant | number }} TND
+                  </ng-template>
+                </td>
+                <td>
+                  <span
+                    class="badge {{ getStatusBadgeClass(reservation.statut) }}"
+                  >
+                    {{
+                      reservation.statut === "VALIDEE"
+                        ? "Validée"
+                        : reservation.statut === "EN_ATTENTE"
+                        ? "En attente"
+                        : "Annulée"
+                    }}
+                  </span>
+                </td>
+                <td>
+    <span
+      class="badge"
+      [ngClass]="{
+        'bg-success': reservation.paiementValide,
+        'bg-danger': !reservation.paiementValide
+      }"
+    >
+      {{ reservation.paiementValide ? 'Payé' : 'Non payé' }}
+    </span>
+  </td>
+                <td>
+                  <button
+                    *ngIf="
+                      reservation.statut === 'VALIDEE' ||
+                      reservation.statut === 'EN_ATTENTE'
+                    "
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="openCancelModal(reservation.id!, cancelModal)"
+                  >
+                    <i class="bi bi-x-circle"></i> Annuler
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

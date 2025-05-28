@@ -1,99 +1,281 @@
-<!-- open-space.component.html -->
+<!-- Hero Section -->
 <section class="py-5 bg-light position-relative">
-    <div class="container position-relative z-3">
-      <div class="row justify-content-center text-center py-5">
-        <div class="col-lg-8">
-          <h1 class="display-4 fw-bold mb-4">
-            Espaces Ouverts
-          </h1>
-          <p class="lead text-muted mb-6">
-            Découvrez nos espaces de coworking flexibles, conçus pour stimuler
-            votre productivité et favoriser les rencontres professionnelles.
-          </p>
-          <div class="d-flex gap-3 justify-content-center">
-            <button class="btn btn-primary btn-lg" routerLink="/spaces">
+  <div class="container position-relative z-3">
+    <div class="row justify-content-center text-center py-5">
+      <div class="col-lg-8">
+        <h1 class="display-4 fw-bold mb-4">Espaces Ouverts</h1>
+        <p class="lead text-muted mb-4">
+          Découvrez nos espaces de coworking flexibles, conçus pour stimuler
+          votre productivité et favoriser les rencontres professionnelles.
+        </p>
+        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+          <button class="btn btn-primary btn-lg" routerLink="/spaces">
             Découvrez nos espaces
           </button>
-          <a class="btn btn-outline-primary btn-lg" href="https://maps.app.goo.gl/u8s9KhVP8uh71Gdf7" target="_blank" rel="noopener noreferrer">
-            Voir la localisation
-          </a>          
-        </div>  
         </div>
       </div>
     </div>
-  </section>
-  
-  <div class="container py-5">
-    <div class="row g-4">
-      <!-- Pricing Section -->
-      <div class="col-lg-6">
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <h2 class="h3 fw-bold mb-4">Nos Abonnements Espaces Ouverts</h2>
-            
-            <div class="mb-4 p-4 bg-light rounded">
-              <h3 class="h4 fw-bold mb-3">Mensuel</h3>
-              <p class="display-5 fw-bold text-primary">650 TND <small class="text-muted fs-6">/mois</small></p>
-              <button class="btn btn-primary w-100 mt-3">S'abonner</button>
-            </div>
-            
-            <div class="p-4 bg-light rounded">
-              <h3 class="h4 fw-bold mb-3">Annuel</h3>
-              <p class="display-5 fw-bold text-primary">7000 TND <small class="text-muted fs-6">/an</small></p>
-              <p class="text-success fw-bold"><i class="bi bi-gift me-2"></i>2 mois offerts</p>
-              <button class="btn btn-primary w-100 mt-3">S'abonner</button>
-            </div>
+  </div>
+</section>
+
+<!-- Main Content -->
+<div class="container py-5">
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-3">Chargement des espaces ouverts...</p>
+  </div>
+
+  <!-- Content Section -->
+  <div *ngIf="!isLoading" class="row g-4">
+    <!-- Subscriptions Section -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h3 fw-bold mb-4">Nos Abonnements Espaces Ouverts</h2>
+
+          <!-- Active Subscription Alert -->
+          <div *ngIf="hasActiveSubscription()" class="alert alert-success mb-4">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            Vous avez un abonnement actif ({{ getActiveSubscriptionType() }})
           </div>
-        </div>
-      </div>
-      
-      <!-- Benefits Section -->
-      <div class="col-lg-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h2 class="h3 fw-bold mb-4">Votre abonnement inclut</h2>
-            <ul class="list-unstyled">
-              <li class="mb-3 p-3 bg-light rounded">
-                <i class="bi bi-check-circle-fill text-primary me-2"></i>
-                <strong>Accès illimité</strong> à tous nos espaces de travail
-              </li>
-              <li class="mb-3 p-3 bg-light rounded">
-                <i class="bi bi-check-circle-fill text-primary me-2"></i>
-                <strong>Wifi haut débit</strong> avec connexion sécurisée
-              </li>
-              <li class="mb-3 p-3 bg-light rounded">
-                <i class="bi bi-check-circle-fill text-primary me-2"></i>
-                <strong>Café & thé</strong> à volonté
-              </li>
-              <li class="mb-3 p-3 bg-light rounded">
-                <i class="bi bi-check-circle-fill text-primary me-2"></i>
-                <strong>Réservation de salles</strong> incluse 
-              </li>
-              <li class="mb-3 p-3 bg-light rounded">
-                <i class="bi bi-check-circle-fill text-primary me-2"></i>
-                <strong>Parking privé</strong> gratuit
-              </li>
-              <li class="mb-3 p-3 bg-light rounded">
-                <i class="bi bi-check-circle-fill text-primary me-2"></i>
-                <strong>Événements exclusifs</strong> pour les membres
+
+          <!-- Monthly Subscription -->
+          <div *ngIf="getSubscriptionByType('MENSUEL') as mensuel" class="mb-4 p-4 bg-light rounded">
+            <h3 class="h4 fw-bold mb-3">Mensuel</h3>
+            <p class="display-5 fw-bold text-primary">
+              {{ mensuel.prix }} TND 
+              <small class="text-muted fs-6">/mois</small>
+            </p>
+            
+            <ul class="list-unstyled mb-3">
+              <li class="mb-2"><i class="bi bi-check-circle text-primary me-2"></i>Accès 24/7</li>
+              <li class="mb-2"><i class="bi bi-check-circle text-primary me-2"></i>Wi-Fi haut débit</li>
+              <li class="mb-2">
+                <i class="bi bi-check-circle text-primary me-2"></i>Réservation de salles incluse
               </li>
             </ul>
             
-            <button class="btn btn-outline-primary w-100 mt-4">
-                Réserver maintenant
+            <button 
+  class="btn btn-primary w-100 mt-3" 
+  (click)="selectSubscription('MENSUEL')"
+  [disabled]="!authService.isLoggedIn()">
+  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+  {{ hasActiveSubscription() ? 'Modifier la réservation' : 'Choisir cet abonnement' }}
+</button>
+          </div>
+
+          <!-- Annual Subscription -->
+          <div *ngIf="getSubscriptionByType('ANNUEL') as annuel" class="p-4 bg-light rounded">
+            <h3 class="h4 fw-bold mb-3">Annuel</h3>
+            <p class="display-5 fw-bold text-primary">
+              {{ annuel.prix }} TND 
+              <small class="text-muted fs-6">/an</small>
+            </p>
+            <p class="text-success fw-bold">
+              <i class="bi bi-gift me-2"></i>2 mois offerts
+            </p>
+            <ul class="list-unstyled mb-3">
+              <li class="mb-2"><i class="bi bi-check-circle text-primary me-2"></i>Tous les avantages du mensuel</li>
+              <li class="mb-2"><i class="bi bi-check-circle text-primary me-2"></i>Parking privé gratuit</li>
+              <li><i class="bi bi-check-circle text-primary me-2"></i>Accès aux événements premium</li>
+            </ul>
+            <button 
+              class="btn btn-primary w-100 mt-3" 
+              (click)="selectSubscription('ANNUEL')"
+              [disabled]="!authService.isLoggedIn()">
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+              {{ hasActiveSubscription() ? 'Modifier la réservation' : 'Choisir cet abonnement' }}
             </button>
+          </div>
+
+          <!-- Date Picker Section -->
+          <div *ngIf="showDatePicker" class="card mt-4">
+            <div class="card-body">
+              <h3 class="h5 fw-bold mb-3">Sélectionnez une date de début</h3>
+              
+              <div class="mb-3">
+                <ngb-datepicker 
+  #dp 
+  [(ngModel)]="selectedDate" 
+  [minDate]="minDate" 
+  [maxDate]="maxDate"
+  [markDisabled]="isDateDisabled"
+  (dateSelect)="onDateSelect($event)">
+</ngb-datepicker>
+              </div>
+
+              <div *ngIf="selectedDate" class="alert alert-info">
+                <p class="mb-1"><strong>Période sélectionnée :</strong></p>
+                <p class="mb-0">{{ getFormattedDateRange() }}</p>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button 
+                  class="btn btn-outline-secondary w-50" 
+                  (click)="showDatePicker = false">
+                  Annuler
+                </button>
+                <button 
+                  class="btn btn-primary w-50" 
+                  (click)="reserveNow()"
+                  [disabled]="!selectedDate || isLoading">
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  Confirmer
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Unsubscribe Button -->
+          <div *ngIf="hasActiveSubscription() && !showDatePicker" class="mt-3">
+            <button 
+              class="btn btn-danger w-100"
+              (click)="unsubscribe()"
+              [disabled]="!authService.isLoggedIn() || isLoading">
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+              Se désabonner
+            </button>
+            <p class="text-muted small mt-2">
+              <i class="bi bi-info-circle"></i> Votre abonnement actuel sera annulé à la fin de la période payée.
+            </p>
+          </div>
+
+          <!-- No Subscriptions Message -->
+          <div *ngIf="availableSubscriptions.length === 0" class="alert alert-info">
+            Aucun abonnement disponible pour le moment.
           </div>
         </div>
       </div>
-      
-      <!-- Gallery Section -->
-      <div class="col-12 mt-5">
-        <h2 class="h3 fw-bold mb-4">Découvrez nos espaces</h2>
-        <div class="row g-3">
-          <div class="col-md-4" *ngFor="let image of openSpaceImages">
-            <img [src]="image" class="img-fluid rounded shadow-sm" alt="Espace ouvert">
+    </div>
+
+    <!-- Benefits + Spaces Section -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h3 fw-bold mb-4">Avantages</h2>
+
+          <!-- List of benefits -->
+          <ng-container *ngFor="let benefit of benefits">
+            <div class="d-flex align-items-start mb-3">
+              <div class="me-3 text-primary">
+                <i [class]="'bi ' + benefit.icon" style="font-size: 1.5rem"></i>
+              </div>
+              <div>
+                <h3 class="h5 fw-bold mb-1">{{ benefit.title }}</h3>
+                <p class="text-muted mb-0">{{ benefit.description }}</p>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Open Spaces -->
+          <div class="mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h2 class="h4 fw-bold mb-0">Nos espaces ouverts</h2>
+            </div>
+
+            <!-- No Spaces Message -->
+            <div *ngIf="espacesOuverts.length === 0" class="text-center py-5 bg-light rounded">
+              <i class="bi bi-building text-muted mb-3" style="font-size: 3rem"></i>
+              <h3 class="h5 fw-bold mb-2">Aucun espace disponible</h3>
+              <p class="text-muted">
+                Tous nos espaces sont actuellement complets. Revenez plus tard !
+              </p>
+            </div>
+
+            <!-- Spaces List -->
+            <div class="row g-4" *ngIf="espacesOuverts.length > 0">
+              <div class="col-md" *ngFor="let espace of espacesOuverts">
+                <div class="card h-100 border-0 shadow-sm hover-scale">
+                  <img
+                    [src]="espace.photoPrincipal"
+                    class="card-img-top"
+                    [alt]="espace.name"
+                    style="height: 200px; object-fit: cover"
+                    onerror="this.src='assets/images/default-space.jpg'"
+                  />
+                  <div class="card-body">
+                    <h3 class="h5 fw-bold mb-2">{{ espace.name }}</h3>
+                    <p class="text-muted mb-3">
+                      {{ espace.description | truncate : 100 }}
+                    </p>
+                    <div class="d-flex justify-content-between">
+                      <span class="badge bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-people me-1"></i>{{ espace.capacity }} pers. max
+                      </span>
+                      <span class="text-muted">
+                        <i class="bi bi-star-fill text-warning me-1"></i>{{ getSpaceRating(espace.id) }}
+                      </span>
+                    </div>
+                    <div class="mt-3 text-end">
+          <a class="btn btn-outline-primary btn-sm" [routerLink]="['/openspace', espace.id]">
+            Voir détails
+          </a>
+        </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+  class="btn btn-outline-primary w-100 mt-4"
+  (click)="hasActiveSubscription() ? selectSubscription(subscriptionType || 'MENSUEL') : null"
+  [disabled]="!authService.isLoggedIn() || isLoading">
+  <i class="bi bi-calendar-plus me-2"></i> 
+  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+  {{ !authService.isLoggedIn() ? 'Connectez-vous pour réserver' : 
+     !hasActiveSubscription() ? 'Abonnez-vous pour réserver' : 
+     isLoading ? 'Traitement...' : 'Modifier la réservation' }}
+</button>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Lightbox Modal -->
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true" #lightboxModal>
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content bg-transparent border-0">
+      <div class="modal-header border-0">
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center p-0">
+        <img [src]="galleryImages[currentImageIndex]" class="img-fluid rounded" style="max-height: 80vh" />
+      </div>
+      <div class="modal-footer border-0 justify-content-between">
+        <button type="button" class="btn btn-dark rounded-circle" (click)="prevImage()">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button type="button" class="btn btn-dark rounded-circle" (click)="nextImage()">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Unsubscribe Confirmation Modal -->
+<div class="modal fade" id="unsubscribeModal" tabindex="-1" aria-hidden="true" #unsubscribeModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmer le désabonnement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Êtes-vous sûr de vouloir vous désabonner ?</p>
+        <p class="text-muted small">Votre accès aux espaces ouverts sera maintenu jusqu'à la fin de la période payée.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-danger" (click)="confirmUnsubscribe()" data-bs-dismiss="modal">
+          Confirmer le désabonnement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

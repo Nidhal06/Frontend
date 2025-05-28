@@ -146,7 +146,7 @@
                   </div>
                   <div>
                     <h3 class="h5 fw-bold mb-1">Email</h3>
-                    <p class="text-muted mb-0">level1hub1@gmail.com</p>
+                    <p class="text-muted mb-0">level1hub1&#64;gmail.com</p>
                   </div>
                 </div>
               </div>
@@ -196,39 +196,61 @@
           </div>
           
           <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body p-4">
-                <h3 class="h4 fw-bold mb-4">Envoyez-nous un message</h3>
-                
-                <form>
-                  <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                      <label for="name" class="form-label">Nom</label>
-                      <input type="text" class="form-control" id="name" placeholder="Votre nom">
-                    </div>
-                    <div class="col-md-6">
-                      <label for="email" class="form-label">Email</label>
-                      <input type="email" class="form-control" id="email" placeholder="Votre email">
-                    </div>
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label for="subject" class="form-label">Sujet</label>
-                    <input type="text" class="form-control" id="subject" placeholder="Sujet de votre message">
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label for="message" class="form-label">Message</label>
-                    <textarea class="form-control" id="message" rows="5" placeholder="Votre message"></textarea>
-                  </div>
-                  
-                  <button type="submit" class="btn btn-primary w-100">
-                    Envoyer
-                  </button>
-                </form>
-              </div>
+  <div class="card border-0 shadow-sm h-100">
+    <div class="card-body p-4">
+      <h3 class="h4 fw-bold mb-4">Envoyez-nous un message</h3>
+      
+      <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label for="name" class="form-label">Nom</label>
+            <input type="text" class="form-control" id="name" 
+                   formControlName="name" placeholder="Votre nom">
+            <div *ngIf="contactForm.get('name')?.invalid && contactForm.get('name')?.touched" 
+                 class="invalid-feedback d-block">
+              <small>Ce champ est obligatoire</small>
             </div>
           </div>
+          <div class="col-md-6">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" 
+                   formControlName="email" placeholder="Votre email">
+            <div *ngIf="contactForm.get('email')?.invalid && contactForm.get('email')?.touched" 
+                 class="invalid-feedback d-block">
+              <small *ngIf="contactForm.get('email')?.errors?.['required']">Ce champ est obligatoire</small>
+              <small *ngIf="contactForm.get('email')?.errors?.['email']">Email invalide</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label for="subject" class="form-label">Sujet</label>
+          <input type="text" class="form-control" id="subject" 
+                 formControlName="subject" placeholder="Sujet de votre message">
+          <div *ngIf="contactForm.get('subject')?.invalid && contactForm.get('subject')?.touched" 
+               class="invalid-feedback d-block">
+            <small>Ce champ est obligatoire</small>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label for="message" class="form-label">Message</label>
+          <textarea class="form-control" id="message" rows="5" 
+                    formControlName="message" placeholder="Votre message"></textarea>
+          <div *ngIf="contactForm.get('message')?.invalid && contactForm.get('message')?.touched" 
+               class="invalid-feedback d-block">
+            <small>Ce champ est obligatoire</small>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100" [disabled]="isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          Envoyer
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
         </div>
       </div>
     </section>

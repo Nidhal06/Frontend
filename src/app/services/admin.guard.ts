@@ -1,33 +1,27 @@
+
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
+import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
+import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminGuard implements CanActivate {
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
-  constructor(private authService: AuthService, private router: Router) {}
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+    if (this.authService.isLoggedIn() && this.authService.isAdmin()) {
+      return true;
+    }
 
-canActivate(): boolean {
-  const user = this.authService.getCurrentUser();
-  
-  if (!user) {
-    this.router.navigate(['/signin']);
+    this.router.navigate(['/']);
     return false;
   }
-
-  // Vérification des rôles
-  const hasAdminRole = user.roles && 
-                      user.roles.some((role: string) => 
-                        role.includes('ADMIN') || role === 'ROLE_ADMIN');
-  
-  if (hasAdminRole) {
-    return true;
-  }
-
-  // Redirection vers la page d'accueil si pas admin
-  this.router.navigate(['/']);
-  return false;
-}
 }

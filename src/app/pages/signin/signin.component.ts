@@ -1,74 +1,85 @@
-// signin.component.ts (version corrigée)
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
+import { AuthRequest } from '../../types/entities';
 import { AuthService } from '../../services/auth.service';
-import { ToastService } from '../../services/toast.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-signin',
   templateUrl: './signin.component.html',
   styleUrls: ['./signin.component.css']
 })
-export class SigninComponent {
-  loginForm: FormGroup;
+export class SigninComponent implements OnInit {
+  loginForm!: FormGroup;
   showPassword = false;
   isLoading = false;
-  returnUrl: string;
+  submitted = false;
 
   constructor(
-    private fb: FormBuilder,
+    private formBuilder: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute,
-    private toastService: ToastService
-  ) {
-    this.loginForm = this.fb.group({
-      username: ['', [Validators.required]],
+    private toastr: ToastrService
+  ) { }
+
+  ngOnInit(): void {
+    this.initializeForm();
+  }
+
+  initializeForm(): void {
+    this.loginForm = this.formBuilder.group({
+      email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
-
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
 
+  // Convenience getter for easy access to form fields
   get f() { return this.loginForm.controls; }
 
-
-onSubmit() {
-  if (this.loginForm.invalid) {
-    return;
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
-  this.isLoading = true;
-  this.authService.login({
-    username: this.f['username'].value,
-    password: this.f['password'].value
-  }).subscribe({
-    next: (response) => {
-      this.isLoading = false;
-      const user = this.authService.getCurrentUser();
-      if (user && user.roles && user.roles.length > 0) {
-        const redirectPath = this.authService.getRoleBasedRedirectPath(user.roles[0]);
-        this.router.navigate([redirectPath]);
-      } else {
-        this.router.navigate(['/']);
-      }
-    },
-    error: (error) => {
-      this.isLoading = false;
-      let errorMessage = 'Erreur de connexion';
-      if (error.status === 401) {
-        errorMessage = 'Identifiants incorrects';
-      } else if (error.status === 403) {
-        errorMessage = 'Compte désactivé ou non autorisé';
-      }
-      this.toastService.showError(errorMessage, 'Veuillez vérifier vos informations');
-    }
-  });
-}
-  
+  onSubmit(): void {
+    this.submitted = true;
 
-  togglePasswordVisibility() {
-    this.showPassword = !this.showPassword;
+    // Stop here if form is invalid
+    if (this.loginForm.invalid) {
+      return;
+    }
+
+    this.isLoading = true;
+
+    const authRequest: AuthRequest = {
+      email: this.f['email'].value,
+      password: this.f['password'].value
+    };
+
+    this.authService.login(authRequest).subscribe({
+  next: (response) => {
+    this.isLoading = false;
+    this.toastr.success('Connexion réussie', 'Bienvenue !');
+    
+    // Redirect based on user role
+    if (response.role === 'ADMIN') {
+      this.router.navigate(['/admin-dashboard']);
+    } else if (response.role === 'RECEPTIONISTE') {
+      this.router.navigate(['/reception-dashboard']);
+    } else if (response.role === 'COWORKER') {
+      this.router.navigate(['/coworker-dashboard']);
+    }
+  },
+  error: (error) => {
+    this.isLoading = false;
+    console.error('Login error:', error);
+    
+    if (error.error?.message) {
+      this.toastr.error(error.error.message, 'Erreur de connexion');
+    } else {
+      this.toastr.error('Email ou mot de passe incorrect', 'Erreur de connexion');
+    }
+  }
+});
   }
 }

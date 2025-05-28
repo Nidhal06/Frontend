@@ -1,13 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { format, parseISO } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { EventService } from '../../services/event.service';
-import { Event } from '../../services/event.model';
-import { AuthService } from '../../services/auth.service';
-import { TeamInviteDialogComponent } from './team-invite-dialog/team-invite-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { EvenementDTO } from '../../types/entities';
+import { EvenementService } from '../../services/evenement.service';
+import { AuthService } from '../../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-events',
@@ -15,175 +11,137 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   styleUrls: ['./events.component.css']
 })
 export class EventsComponent implements OnInit {
-  events: Event[] = [];
-  filteredEvents: Event[] = [];
+  events: EvenementDTO[] = [];
+  filteredEvents: EvenementDTO[] = [];
+  paginatedEvents: EvenementDTO[] = [];
   searchTerm = '';
   isRegisteredFilter = 'all';
-  activeTab = 'my-events';
   isLoading = true;
   isAuthenticated = false;
-  user: any = null;
   currentUserId: number | null = null;
-  
-  // Propriétés pour la pagination
   currentPage = 1;
-  itemsPerPage = 3;
-  totalItems = 0;
+  itemsPerPage = 6;
+  activeTab = 'my-events'; 
 
   constructor(
-    private eventService: EventService,
+    private eventService: EvenementService,
     private authService: AuthService,
-    private dialog: MatDialog,
     private router: Router,
-    private snackBar: MatSnackBar
+    private toastr: ToastrService
   ) {}
 
-  ngOnInit() {
-    this.checkAuthStatus(); 
-    this.currentUserId = this.authService.getCurrentUser()?.id;
+  ngOnInit(): void {
+    this.checkAuthentication();
     this.loadEvents();
   }
 
-  private checkAuthStatus(): void {
-    this.isAuthenticated = this.authService.isLoggedIn();
-    if (this.isAuthenticated) {
-      this.user = this.authService.getCurrentUser();
-    }
+  // Ajouté pour gérer le changement d'onglet
+  changeTab(tab: string): void {
+    this.activeTab = tab;
+    this.applyFilters();
   }
 
-  private parseDate(dateString: string): Date {
-    if (dateString.includes('T')) {
-      return new Date(dateString);
-    }
-    else if (dateString.includes(' ')) {
-      const [datePart, timePart] = dateString.split(' ');
-      const [year, month, day] = datePart.split('-').map(Number);
-      const [hours, minutes, seconds] = timePart.split(':').map(Number);
-      return new Date(year, month - 1, day, hours, minutes, seconds);
-    }
-    return new Date(dateString);
-  } 
+  checkAuthentication(): void {
+    this.isAuthenticated = this.authService.isLoggedIn();
+    this.currentUserId = this.authService.getCurrentUserId();
+  }
 
   loadEvents(): void {
-    this.eventService.getAllEvents().subscribe({
+    this.isLoading = true;
+    this.eventService.getAllEvenements().subscribe({
       next: (events) => {
-        this.events = events.map(event => {
-          const startTime = new Date(event.startTime);
-          const endTime = new Date(event.endTime);
-          
-          return {
-            ...event,
-            startTime: startTime.toISOString(),
-            endTime: endTime.toISOString(),
-            participants: event.participants || [],
-            isRegistered: this.currentUserId 
-              ? event.participants.some(p => p.id === this.currentUserId)
-              : false,
-            registered: event.participants.length
-          };
-        });
-        
-        this.filteredEvents = [...this.events]; // Afficher tous les événements
-        this.totalItems = this.filteredEvents.length;
+        this.processEvents(events);
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error loading events:', err);
+        this.toastr.error('Erreur lors du chargement des événements');
         this.isLoading = false;
       }
     });
   }
-  
-  changeTab(tab: string): void {
-    this.activeTab = tab;
-  }
 
-  applyFilters(): void {
-    let results = [...this.events]; // Utiliser tous les événements comme base
-
-    // Filtre par recherche
-    if (this.searchTerm) {
-      results = results.filter(event => 
-        event.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        event.description.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
-
-    // Filtre par inscription (seulement si authentifié)
-    if (this.isAuthenticated && this.isRegisteredFilter !== 'all') {
-      results = results.filter(event => 
-        this.isRegisteredFilter === 'registered' ? event.isRegistered : !event.isRegistered
-      );
-    }
-
-    this.filteredEvents = results;
-    this.totalItems = this.filteredEvents.length;
-    this.currentPage = 1;
-  }
-
-  resetFilters(): void {
-    this.searchTerm = '';
-    this.isRegisteredFilter = 'all';
+  processEvents(events: EvenementDTO[]): void {
+    this.events = events.map(event => {
+      return {
+        ...event,
+        isRegistered: this.isUserRegistered(event),
+        isFull: event.participants.length >= event.maxParticipants,
+        availableSpots: event.maxParticipants - event.participants.length
+      };
+    });
     this.applyFilters();
   }
 
-  formatDate(dateString: string): string {
-    return format(parseISO(dateString), 'dd MMMM yyyy', { locale: fr });
+  isUserRegistered(event: EvenementDTO): boolean {
+    if (!this.currentUserId) return false;
+    return event.participants.some(p => p.userId === this.currentUserId);
   }
 
-  formatTime(dateString: string): string {
-    return format(parseISO(dateString), 'HH:mm', { locale: fr });
+  applyFilters(): void {
+    let filtered = [...this.events];
+
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(event => 
+        event.titre.toLowerCase().includes(term) || 
+        event.description.toLowerCase().includes(term));
+    }
+
+    if (this.isAuthenticated && this.isRegisteredFilter !== 'all') {
+      filtered = filtered.filter(event => 
+        this.isRegisteredFilter === 'registered' 
+          ? event.isRegistered 
+          : !event.isRegistered
+      );
+    }
+
+    this.filteredEvents = filtered;
+    this.updatePagination();
   }
 
-  // Méthodes pour la pagination
-  get paginatedEvents(): Event[] {
+  // Méthodes de pagination ajoutées
+  updatePagination(): void {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    return this.filteredEvents.slice(startIndex, startIndex + this.itemsPerPage);
+    this.paginatedEvents = this.filteredEvents.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
   getTotalPages(): number {
-    return Math.ceil(this.totalItems / this.itemsPerPage);
+    return Math.ceil(this.filteredEvents.length / this.itemsPerPage);
   }
 
   getPages(): number[] {
     const totalPages = this.getTotalPages();
-    if (totalPages <= 1) return [];
-    
-    const pages: number[] = [];
-    const start = Math.max(2, this.currentPage - 1);
-    const end = Math.min(totalPages - 1, this.currentPage + 1);
-    
-    pages.push(1);
-    
-    for (let i = start; i <= end; i++) {
-      if (i > 1 && i < totalPages) {
-        pages.push(i);
-      }
-    }
-    
-    if (totalPages > 1) {
-      pages.push(totalPages);
-    }
-    
-    return pages;
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(page: number): void {
+    this.currentPage = page;
+    this.updatePagination();
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
+      this.updatePagination();
     }
   }
 
   nextPage(): void {
     if (this.currentPage < this.getTotalPages()) {
       this.currentPage++;
+      this.updatePagination();
     }
   }
 
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.getTotalPages()) {
-      this.currentPage = page;
-    }
+  // Méthodes pour formater les dates
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR');
+  }
+
+  formatTime(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   }
 
   handleRegistration(eventId: number): void {
@@ -191,58 +149,70 @@ export class EventsComponent implements OnInit {
       this.redirectToLogin();
       return;
     }
-    
+
     const event = this.events.find(e => e.id === eventId);
     if (!event) return;
 
-    const action = event.isRegistered 
-      ? this.eventService.unregisterFromEvent(eventId, this.currentUserId)
-      : this.eventService.registerToEvent(eventId, this.currentUserId);
+    if (event.isRegistered) {
+      this.cancelRegistration(eventId);
+    } else {
+      this.registerForEvent(eventId);
+    }
+  }
 
-    action.subscribe({
+  registerForEvent(eventId: number): void {
+    if (!this.currentUserId) return;
+
+    this.eventService.registerParticipant(eventId, this.currentUserId).subscribe({
       next: (updatedEvent) => {
-        event.isRegistered = !event.isRegistered;
-        event.participants = updatedEvent.participants || [];
-        event.registered = event.participants.length;
-        
-        const message = event.isRegistered 
-          ? 'Inscription confirmée!' 
-          : 'Désinscription confirmée';
-        this.snackBar.open(message, 'Fermer', { duration: 3000 });
-        
-        this.loadEvents();
+        this.updateEventInList(updatedEvent);
+        this.toastr.success('Inscription réussie');
       },
       error: (err) => {
-        console.error('Registration error:', err);
-        this.snackBar.open('Une erreur est survenue', 'Fermer', { duration: 3000 });
+        this.toastr.error('Erreur lors de l\'inscription');
       }
     });
   }
 
-  openTeamInviteDialog(eventId: number): void {
-    const dialogRef = this.dialog.open(TeamInviteDialogComponent, {
-      width: '500px',
-      data: { eventId }
-    });
-  
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadEvents();
+  cancelRegistration(eventId: number): void {
+    if (!this.currentUserId) return;
+
+    this.eventService.cancelParticipation(eventId, this.currentUserId).subscribe({
+      next: (updatedEvent) => {
+        this.updateEventInList(updatedEvent);
+        this.toastr.success('Inscription annulée');
+      },
+      error: (err) => {
+        this.toastr.error('Erreur lors de l\'annulation');
       }
     });
   }
 
-  hasCompanyRole(): boolean {
-    return this.authService.hasRole(['ROLE_COMPANY']);
-  }
-
-  hasAdminRole(): boolean {
-    return this.authService.hasRole(['ROLE_ADMIN']);
+  private updateEventInList(updatedEvent: EvenementDTO): void {
+    const index = this.events.findIndex(e => e.id === updatedEvent.id);
+    if (index !== -1) {
+      this.events[index] = {
+        ...updatedEvent,
+        isRegistered: updatedEvent.participants.some(p => p.userId === this.currentUserId),
+        isFull: updatedEvent.participants.length >= updatedEvent.maxParticipants,
+        availableSpots: updatedEvent.maxParticipants - updatedEvent.participants.length
+      };
+      this.applyFilters();
+    }
   }
 
   redirectToLogin(): void {
-    this.router.navigate(['/signin'], {
-      queryParams: { returnUrl: this.router.url }
-    });
+    this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url } });
+  }
+
+  hasAdminRole(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  getProgressPercentage(event: EvenementDTO): number {
+    if (!event.maxParticipants || event.maxParticipants === 0) return 0;
+    const participantsCount = event.participants.length;
+    const percentage = (participantsCount / event.maxParticipants) * 100;
+    return Math.min(100, Math.round(percentage)); 
   }
 }
