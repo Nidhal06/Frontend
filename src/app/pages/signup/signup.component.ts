@@ -5,16 +5,34 @@ import { SignupRequest } from '../../types/entities';
 import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 
+/**
+ * Composant Signup - Gestion de l'inscription des nouveaux utilisateurs
+ */
 @Component({
   selector: 'app-signup',
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css']
 })
 export class SignupComponent implements OnInit {
+  // =============================================
+  // SECTION: PROPRIÉTÉS DU COMPOSANT
+  // =============================================
+
+  // Formulaire d'inscription
   registerForm!: FormGroup;
+  
+  // Contrôle de l'affichage du mot de passe
   showPassword = false;
+  
+  // État de chargement pendant l'inscription
   isLoading = false;
+  
+  // Indicateur de soumission du formulaire
   submitted = false;
+
+  // =============================================
+  // SECTION: INITIALISATION
+  // =============================================
 
   constructor(
     private formBuilder: FormBuilder,
@@ -23,11 +41,21 @@ export class SignupComponent implements OnInit {
     private toastr: ToastrService
   ) { }
 
+  /**
+   * Initialisation du composant
+   */
   ngOnInit(): void {
     this.initializeForm();
   }
 
-  initializeForm(): void {
+  // =============================================
+  // SECTION: INITIALISATION DU FORMULAIRE
+  // =============================================
+
+  /**
+   * Initialise le formulaire d'inscription avec les validateurs
+   */
+  private initializeForm(): void {
     this.registerForm = this.formBuilder.group({
       firstName: ['', [Validators.required, Validators.maxLength(100)]],
       lastName: ['', [Validators.required, Validators.maxLength(100)]],
@@ -57,23 +85,36 @@ export class SignupComponent implements OnInit {
     });
   }
 
-  // Convenience getter for easy access to form fields
-  get f() { return this.registerForm.controls; }
+  // =============================================
+  // SECTION: ACCÈS AUX CONTROLES DU FORMULAIRE
+  // =============================================
 
-  togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
+  /**
+   * Getter pour accéder facilement aux contrôles du formulaire
+   * @returns Les contrôles du formulaire
+   */
+  get f() { 
+    return this.registerForm.controls; 
   }
 
+  // =============================================
+  // SECTION: GESTION DE L'INSCRIPTION
+  // =============================================
+
+  /**
+   * Gère la soumission du formulaire d'inscription
+   */
   onSubmit(): void {
     this.submitted = true;
 
-    // Stop here if form is invalid
+    // Arrête si le formulaire est invalide
     if (this.registerForm.invalid) {
       return;
     }
 
     this.isLoading = true;
 
+    // Prépare la requête d'inscription
     const signupRequest: SignupRequest = {
       firstName: this.f['firstName'].value,
       lastName: this.f['lastName'].value,
@@ -83,22 +124,49 @@ export class SignupComponent implements OnInit {
       phone: this.f['phone'].value
     };
 
+    // Appel au service d'authentification
     this.authService.register(signupRequest).subscribe({
       next: () => {
-        this.isLoading = false;
-        this.toastr.success('Inscription réussie', 'Bienvenue !');
-        this.router.navigate(['/signin']);
+        this.handleRegistrationSuccess();
       },
       error: (error) => {
-        this.isLoading = false;
-        console.error('Registration error:', error);
-        
-        if (error.error && error.error.message) {
-          this.toastr.error(error.error.message, 'Erreur d\'inscription');
-        } else {
-          this.toastr.error('Une erreur est survenue lors de l\'inscription', 'Erreur');
-        }
+        this.handleRegistrationError(error);
       }
     });
+  }
+
+  /**
+   * Gère le succès de l'inscription
+   */
+  private handleRegistrationSuccess(): void {
+    this.isLoading = false;
+    this.toastr.success('Inscription réussie', 'Bienvenue !');
+    this.router.navigate(['/signin']);
+  }
+
+  /**
+   * Gère les erreurs d'inscription
+   * @param error Erreur retournée par le serveur
+   */
+  private handleRegistrationError(error: any): void {
+    this.isLoading = false;
+    console.error('Registration error:', error);
+    
+    if (error.error && error.error.message) {
+      this.toastr.error(error.error.message, 'Erreur d\'inscription');
+    } else {
+      this.toastr.error('Une erreur est survenue lors de l\'inscription', 'Erreur');
+    }
+  }
+
+  // =============================================
+  // SECTION: UTILITAIRES D'INTERFACE
+  // =============================================
+
+  /**
+   * Bascule la visibilité du mot de passe
+   */
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 }

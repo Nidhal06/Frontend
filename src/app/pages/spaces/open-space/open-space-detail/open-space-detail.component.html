@@ -6,17 +6,21 @@
         <div class="col-lg-8">
           <h1 class="display-4 fw-bold mb-4">Détails de l'espace ouvert</h1>
           <p class="lead text-muted mb-4">
-            Découvrez tous les détails de notre espace de coworking ouvert : un lieu
-            pensé pour favoriser la collaboration et la créativité.
+            Découvrez tous les détails de notre espace de coworking ouvert : un
+            lieu pensé pour favoriser la collaboration et la créativité.
           </p>
-          <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+          <div
+            class="d-flex flex-column flex-sm-row gap-3 justify-content-center"
+          >
             <button class="btn btn-primary btn-lg" routerLink="/open-spaces">
               Retour aux espaces ouverts
             </button>
-            <a class="btn btn-outline-primary btn-lg"
+            <a
+              class="btn btn-outline-primary btn-lg"
               [href]="safeLocationUrl"
               target="_blank"
-              rel="noopener noreferrer">
+              rel="noopener noreferrer"
+            >
               Voir la localisation
             </a>
           </div>
@@ -259,20 +263,43 @@
 </div>
 
 <!-- Lightbox Modal -->
-<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true" #lightboxModal>
+<div
+  class="modal fade"
+  id="lightboxModal"
+  tabindex="-1"
+  aria-hidden="true"
+  #lightboxModal
+>
   <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content bg-transparent border-0">
       <div class="modal-header border-0">
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
       </div>
       <div class="modal-body text-center p-0">
-        <img [src]="galleryImages[currentImageIndex]" class="img-fluid rounded" style="max-height: 80vh" />
+        <img
+          [src]="galleryImages[currentImageIndex]"
+          class="img-fluid rounded"
+          style="max-height: 80vh"
+        />
       </div>
       <div class="modal-footer border-0 justify-content-between">
-        <button type="button" class="btn btn-dark rounded-circle" (click)="prevImage()">
+        <button
+          type="button"
+          class="btn btn-dark rounded-circle"
+          (click)="prevImage()"
+        >
           <i class="bi bi-chevron-left"></i>
         </button>
-        <button type="button" class="btn btn-dark rounded-circle" (click)="nextImage()">
+        <button
+          type="button"
+          class="btn btn-dark rounded-circle"
+          (click)="nextImage()"
+        >
           <i class="bi bi-chevron-right"></i>
         </button>
       </div>

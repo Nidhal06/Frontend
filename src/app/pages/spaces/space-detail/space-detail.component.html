@@ -338,16 +338,16 @@
                 <label class="form-label">Date</label>
                 <div class="input-group">
                   <input
-  class="form-control"
-  placeholder="yyyy-mm-dd"
-  ngbDatepicker
-  #d="ngbDatepicker"
-  [(ngModel)]="selectedDate"
-  name="date"
-  [markDisabled]="isDateDisabledForPicker"  
-  [dayTemplate]="customDayTemplate"
-  required
-/>
+                    class="form-control"
+                    placeholder="yyyy-mm-dd"
+                    ngbDatepicker
+                    #d="ngbDatepicker"
+                    [(ngModel)]="selectedDate"
+                    name="date"
+                    [markDisabled]="isDateDisabledForPicker"
+                    [dayTemplate]="customDayTemplate"
+                    required
+                  />
                   <button
                     class="btn btn-outline-secondary"
                     (click)="d.toggle()"
@@ -358,24 +358,36 @@
                 </div>
               </div>
 
-             <ng-template #customDayTemplate let-date="date" let-currentMonth="currentMonth">
-  <div 
-    class="date-cell"
-    [class.disabled-indisponible]="isDateDisabled(date).reason === 'indisponible'"
-    [class.disabled-reserved-by-user]="isDateDisabled(date).reason === 'reserved-by-user'"
-    [class.disabled-reserved-by-others]="isDateDisabled(date).reason === 'reserved-by-others'"
-    [class.text-muted]="date.month !== currentMonth"
-    [ngbTooltip]="getDateTooltip(date)"
-    placement="top"
-    triggers="manual"
-    #t="ngbTooltip"
-    (mouseenter)="onDateHover(date, t)"
-    (mouseleave)="t.close()"
-    [style.pointer-events]="isDateDisabled(date).disabled ? 'auto' : 'auto'"
-  >
-    {{ date.day }}
-  </div>
-</ng-template>
+              <ng-template
+                #customDayTemplate
+                let-date="date"
+                let-currentMonth="currentMonth"
+              >
+                <div
+                  class="date-cell"
+                  [class.disabled-indisponible]="
+                    isDateDisabled(date).reason === 'indisponible'
+                  "
+                  [class.disabled-reserved-by-user]="
+                    isDateDisabled(date).reason === 'reserved-by-user'
+                  "
+                  [class.disabled-reserved-by-others]="
+                    isDateDisabled(date).reason === 'reserved-by-others'
+                  "
+                  [class.text-muted]="date.month !== currentMonth"
+                  [ngbTooltip]="getDateTooltip(date)"
+                  placement="top"
+                  triggers="manual"
+                  #t="ngbTooltip"
+                  (mouseenter)="onDateHover(date, t)"
+                  (mouseleave)="t.close()"
+                  [style.pointer-events]="
+                    isDateDisabled(date).disabled ? 'auto' : 'auto'
+                  "
+                >
+                  {{ date.day }}
+                </div>
+              </ng-template>
 
               <!-- Start Time -->
               <div class="mb-3">
@@ -383,7 +395,9 @@
                 <ngb-timepicker
                   [(ngModel)]="selectedStartTime"
                   name="startTime"
-                  [disabled]="!selectedDate || isDateDisabled(selectedDate).disabled"
+                  [disabled]="
+                    !selectedDate || isDateDisabled(selectedDate).disabled
+                  "
                   required
                 ></ngb-timepicker>
               </div>
@@ -394,7 +408,9 @@
                 <ngb-timepicker
                   [(ngModel)]="selectedEndTime"
                   name="endTime"
-                  [disabled]="!selectedDate || isDateDisabled(selectedDate).disabled"
+                  [disabled]="
+                    !selectedDate || isDateDisabled(selectedDate).disabled
+                  "
                   required
                 ></ngb-timepicker>
               </div>
@@ -459,4 +475,3 @@
     </div>
   </div>
 </div>
-

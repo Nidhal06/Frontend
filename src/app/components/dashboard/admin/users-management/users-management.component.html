@@ -72,7 +72,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let user of filteredUsers">
+                <tr *ngFor="let user of paginatedUsers">
                   <td class="fw-semibold">{{ user.username }}</td>
                   <td>{{ user.email }}</td>
                   <td>
@@ -169,6 +169,66 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          <!-- Après la fermeture de la table (avant le </ng-template> final) -->
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="text-muted">
+              Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à
+              {{ getMinItemIndex() }} sur {{ totalItems }} utilisateurs
+            </div>
+
+            <ngb-pagination
+              [collectionSize]="totalItems"
+              [(page)]="currentPage"
+              [pageSize]="itemsPerPage"
+              [maxSize]="5"
+              [rotate]="true"
+              [boundaryLinks]="true"
+              (pageChange)="pageChanged($event)"
+              class="pagination-sm"
+            ></ngb-pagination>
+
+            <div class="dropdown">
+              <button
+                class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                type="button"
+                id="itemsPerPageDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                {{ itemsPerPage }} par page
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="itemsPerPageDropdown">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    (click)="itemsPerPage = 5; currentPage = 1"
+                    >5 par page</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    (click)="itemsPerPage = 10; currentPage = 1"
+                    >10 par page</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    (click)="itemsPerPage = 20; currentPage = 1"
+                    >20 par page</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    (click)="itemsPerPage = 50; currentPage = 1"
+                    >50 par page</a
+                  >
+                </li>
+              </ul>
+            </div>
           </div>
         </ng-template>
       </ng-template>

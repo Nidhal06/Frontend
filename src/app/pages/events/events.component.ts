@@ -5,23 +5,55 @@ import { EvenementService } from '../../services/evenement.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
 
+/**
+ * Composant Events - Gestion des événements et inscriptions
+ */
 @Component({
   selector: 'app-events',
   templateUrl: './events.component.html',
   styleUrls: ['./events.component.css']
 })
 export class EventsComponent implements OnInit {
+  // =============================================
+  // SECTION: PROPRIÉTÉS DU COMPOSANT
+  // =============================================
+
+  // Liste complète des événements
   events: EvenementDTO[] = [];
+  
+  // Événements filtrés selon les critères de recherche
   filteredEvents: EvenementDTO[] = [];
+  
+  // Événements paginés pour l'affichage courant
   paginatedEvents: EvenementDTO[] = [];
+  
+  // Terme de recherche pour filtrer les événements
   searchTerm = '';
+  
+  // Filtre d'inscription ('all', 'registered', 'not-registered')
   isRegisteredFilter = 'all';
+  
+  // État de chargement
   isLoading = true;
+  
+  // Statut d'authentification de l'utilisateur
   isAuthenticated = false;
+  
+  // ID de l'utilisateur courant
   currentUserId: number | null = null;
+  
+  // Pagination - page courante
   currentPage = 1;
+  
+  // Pagination - nombre d'items par page
   itemsPerPage = 6;
-  activeTab = 'my-events'; 
+  
+  // Onglet actif ('my-events' ou autre)
+  activeTab = 'my-events';
+
+  // =============================================
+  // SECTION: INITIALISATION
+  // =============================================
 
   constructor(
     private eventService: EvenementService,
@@ -30,23 +62,22 @@ export class EventsComponent implements OnInit {
     private toastr: ToastrService
   ) {}
 
+  /**
+   * Initialisation du composant
+   */
   ngOnInit(): void {
     this.checkAuthentication();
     this.loadEvents();
   }
 
-  // Ajouté pour gérer le changement d'onglet
-  changeTab(tab: string): void {
-    this.activeTab = tab;
-    this.applyFilters();
-  }
+  // =============================================
+  // SECTION: GESTION DES ÉVÉNEMENTS
+  // =============================================
 
-  checkAuthentication(): void {
-    this.isAuthenticated = this.authService.isLoggedIn();
-    this.currentUserId = this.authService.getCurrentUserId();
-  }
-
-  loadEvents(): void {
+  /**
+   * Charge la liste des événements depuis l'API
+   */
+  private loadEvents(): void {
     this.isLoading = true;
     this.eventService.getAllEvenements().subscribe({
       next: (events) => {
@@ -60,7 +91,11 @@ export class EventsComponent implements OnInit {
     });
   }
 
-  processEvents(events: EvenementDTO[]): void {
+  /**
+   * Traite les événements récupérés pour ajouter des métadonnées
+   * @param events Liste des événements à traiter
+   */
+  private processEvents(events: EvenementDTO[]): void {
     this.events = events.map(event => {
       return {
         ...event,
@@ -72,14 +107,44 @@ export class EventsComponent implements OnInit {
     this.applyFilters();
   }
 
-  isUserRegistered(event: EvenementDTO): boolean {
+  /**
+   * Vérifie si l'utilisateur courant est inscrit à un événement
+   * @param event Événement à vérifier
+   * @returns true si l'utilisateur est inscrit
+   */
+  private isUserRegistered(event: EvenementDTO): boolean {
     if (!this.currentUserId) return false;
     return event.participants.some(p => p.userId === this.currentUserId);
   }
 
+  /**
+   * Met à jour un événement dans la liste après modification
+   * @param updatedEvent Événement mis à jour
+   */
+  private updateEventInList(updatedEvent: EvenementDTO): void {
+    const index = this.events.findIndex(e => e.id === updatedEvent.id);
+    if (index !== -1) {
+      this.events[index] = {
+        ...updatedEvent,
+        isRegistered: updatedEvent.participants.some(p => p.userId === this.currentUserId),
+        isFull: updatedEvent.participants.length >= updatedEvent.maxParticipants,
+        availableSpots: updatedEvent.maxParticipants - updatedEvent.participants.length
+      };
+      this.applyFilters();
+    }
+  }
+
+  // =============================================
+  // SECTION: FILTRES ET RECHERCHE
+  // =============================================
+
+  /**
+   * Applique les filtres et la recherche sur la liste des événements
+   */
   applyFilters(): void {
     let filtered = [...this.events];
 
+    // Filtre par terme de recherche
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(event => 
@@ -87,6 +152,7 @@ export class EventsComponent implements OnInit {
         event.description.toLowerCase().includes(term));
     }
 
+    // Filtre par statut d'inscription
     if (this.isAuthenticated && this.isRegisteredFilter !== 'all') {
       filtered = filtered.filter(event => 
         this.isRegisteredFilter === 'registered' 
@@ -99,26 +165,56 @@ export class EventsComponent implements OnInit {
     this.updatePagination();
   }
 
-  // Méthodes de pagination ajoutées
-  updatePagination(): void {
+  /**
+   * Change l'onglet actif et applique les filtres
+   * @param tab Onglet à activer
+   */
+  changeTab(tab: string): void {
+    this.activeTab = tab;
+    this.applyFilters();
+  }
+
+  // =============================================
+  // SECTION: PAGINATION
+  // =============================================
+
+  /**
+   * Met à jour la liste paginée des événements
+   */
+  private updatePagination(): void {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     this.paginatedEvents = this.filteredEvents.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
+  /**
+   * Calcule le nombre total de pages
+   * @returns Nombre total de pages
+   */
   getTotalPages(): number {
     return Math.ceil(this.filteredEvents.length / this.itemsPerPage);
   }
 
+  /**
+   * Génère un tableau des numéros de page
+   * @returns Tableau des numéros de page
+   */
   getPages(): number[] {
     const totalPages = this.getTotalPages();
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
 
+  /**
+   * Navigue vers une page spécifique
+   * @param page Numéro de page
+   */
   goToPage(page: number): void {
     this.currentPage = page;
     this.updatePagination();
   }
 
+  /**
+   * Navigue vers la page précédente
+   */
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
@@ -126,6 +222,9 @@ export class EventsComponent implements OnInit {
     }
   }
 
+  /**
+   * Navigue vers la page suivante
+   */
   nextPage(): void {
     if (this.currentPage < this.getTotalPages()) {
       this.currentPage++;
@@ -133,17 +232,14 @@ export class EventsComponent implements OnInit {
     }
   }
 
-  // Méthodes pour formater les dates
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR');
-  }
+  // =============================================
+  // SECTION: GESTION DES INSCRIPTIONS
+  // =============================================
 
-  formatTime(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  }
-
+  /**
+   * Gère l'inscription ou la désinscription à un événement
+   * @param eventId ID de l'événement
+   */
   handleRegistration(eventId: number): void {
     if (!this.currentUserId) {
       this.redirectToLogin();
@@ -160,7 +256,11 @@ export class EventsComponent implements OnInit {
     }
   }
 
-  registerForEvent(eventId: number): void {
+  /**
+   * Inscrit l'utilisateur courant à un événement
+   * @param eventId ID de l'événement
+   */
+  private registerForEvent(eventId: number): void {
     if (!this.currentUserId) return;
 
     this.eventService.registerParticipant(eventId, this.currentUserId).subscribe({
@@ -174,7 +274,11 @@ export class EventsComponent implements OnInit {
     });
   }
 
-  cancelRegistration(eventId: number): void {
+  /**
+   * Annule l'inscription de l'utilisateur courant à un événement
+   * @param eventId ID de l'événement
+   */
+  private cancelRegistration(eventId: number): void {
     if (!this.currentUserId) return;
 
     this.eventService.cancelParticipation(eventId, this.currentUserId).subscribe({
@@ -188,27 +292,62 @@ export class EventsComponent implements OnInit {
     });
   }
 
-  private updateEventInList(updatedEvent: EvenementDTO): void {
-    const index = this.events.findIndex(e => e.id === updatedEvent.id);
-    if (index !== -1) {
-      this.events[index] = {
-        ...updatedEvent,
-        isRegistered: updatedEvent.participants.some(p => p.userId === this.currentUserId),
-        isFull: updatedEvent.participants.length >= updatedEvent.maxParticipants,
-        availableSpots: updatedEvent.maxParticipants - updatedEvent.participants.length
-      };
-      this.applyFilters();
-    }
+  // =============================================
+  // SECTION: AUTHENTIFICATION
+  // =============================================
+
+  /**
+   * Vérifie l'état d'authentification de l'utilisateur
+   */
+  private checkAuthentication(): void {
+    this.isAuthenticated = this.authService.isLoggedIn();
+    this.currentUserId = this.authService.getCurrentUserId();
   }
 
-  redirectToLogin(): void {
+  /**
+   * Redirige vers la page de connexion
+   */
+  public redirectToLogin(): void {
     this.router.navigate(['/signin'], { queryParams: { returnUrl: this.router.url } });
   }
 
+  /**
+   * Vérifie si l'utilisateur a le rôle admin
+   * @returns true si l'utilisateur est admin
+   */
   hasAdminRole(): boolean {
     return this.authService.isAdmin();
   }
 
+  // =============================================
+  // SECTION: UTILITAIRES
+  // =============================================
+
+  /**
+   * Formate une date au format français
+   * @param dateString Date à formater
+   * @returns Date formatée
+   */
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR');
+  }
+
+  /**
+   * Formate une heure au format français
+   * @param dateString Date contenant l'heure à formater
+   * @returns Heure formatée
+   */
+  formatTime(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  /**
+   * Calcule le pourcentage de remplissage d'un événement
+   * @param event Événement à analyser
+   * @returns Pourcentage de remplissage (0-100)
+   */
   getProgressPercentage(event: EvenementDTO): number {
     if (!event.maxParticipants || event.maxParticipants === 0) return 0;
     const participantsCount = event.participants.length;

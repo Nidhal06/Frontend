@@ -4,6 +4,11 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'filter'
 })
 export class FilterPipe implements PipeTransform {
+  /**
+   * Filtre un tableau d'items selon un texte de recherche
+   * @param items - Le tableau à filtrer
+   * @param searchText - Le texte de recherche
+   */
   transform(items: any[], searchText: string): any[] {
     if (!items) return [];
     if (!searchText) return items;

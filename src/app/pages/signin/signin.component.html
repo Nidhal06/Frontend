@@ -1,14 +1,21 @@
 <div class="container-fluid register">
   <div class="row g-0">
     <!-- Colonne gauche -->
-    <div class="col-md-4 register-left d-flex flex-column justify-content-center">
+    <div
+      class="col-md-4 register-left d-flex flex-column justify-content-center"
+    >
       <div class="text-center px-4">
         <div class="mb-4">
           <i class="bi bi-person-circle display-4 text-white"></i>
           <h2 class="fw-bold text-white mt-3">Bienvenue</h2>
-          <p class="text-white-50">Connectez-vous pour accéder à votre compte.</p>
+          <p class="text-white-50">
+            Connectez-vous pour accéder à votre compte.
+          </p>
         </div>
-        <button class="btn btn-light rounded-pill py-2 px-4 fw-bold" routerLink="/accueil">
+        <button
+          class="btn btn-light rounded-pill py-2 px-4 fw-bold"
+          routerLink="/accueil"
+        >
           <i class="bi bi-arrow-left me-2"></i> Retour à l'accueil
         </button>
       </div>
@@ -23,11 +30,17 @@
             <h3 class="register-heading fw-bold text-primary">
               <i class="bi bi-box-arrow-in-right me-2"></i>Connexion
             </h3>
-            <p class="text-muted">Entrez vos identifiants pour accéder à votre espace</p>
+            <p class="text-muted">
+              Entrez vos identifiants pour accéder à votre espace
+            </p>
           </div>
 
           <!-- Formulaire -->
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="px-lg-5 mx-lg-3">
+          <form
+            [formGroup]="loginForm"
+            (ngSubmit)="onSubmit()"
+            class="px-lg-5 mx-lg-3"
+          >
             <!-- Email -->
             <div class="form-group mb-4">
               <label for="email" class="form-label fw-bold text-secondary mb-2">
@@ -39,19 +52,32 @@
                 id="email"
                 placeholder="Entrez votre email"
                 formControlName="email"
-                [ngClass]="{ 'is-invalid': f['email'].touched && f['email'].errors }"
+                [ngClass]="{
+                  'is-invalid': f['email'].touched && f['email'].errors
+                }"
+              />
+              <div
+                *ngIf="f['email'].touched && f['email'].errors"
+                class="invalid-feedback d-block"
               >
-              <div *ngIf="f['email'].touched && f['email'].errors" class="invalid-feedback d-block">
-                <small><i class="bi bi-exclamation-circle-fill me-1"></i>
-                  <span *ngIf="f['email'].errors?.['required']">Ce champ est obligatoire</span>
-                  <span *ngIf="f['email'].errors?.['email']">Format d'email invalide</span>
+                <small
+                  ><i class="bi bi-exclamation-circle-fill me-1"></i>
+                  <span *ngIf="f['email'].errors?.['required']"
+                    >Ce champ est obligatoire</span
+                  >
+                  <span *ngIf="f['email'].errors?.['email']"
+                    >Format d'email invalide</span
+                  >
                 </small>
               </div>
             </div>
 
             <!-- Mot de passe -->
             <div class="form-group mb-4">
-              <label for="password" class="form-label fw-bold text-secondary mb-2">
+              <label
+                for="password"
+                class="form-label fw-bold text-secondary mb-2"
+              >
                 <i class="bi bi-lock-fill me-2"></i>Mot de passe
               </label>
               <div class="input-group">
@@ -61,19 +87,31 @@
                   id="password"
                   placeholder="••••••••"
                   formControlName="password"
-                  [ngClass]="{ 'is-invalid': f['password'].touched && f['password'].errors }"
-                >
+                  [ngClass]="{
+                    'is-invalid': f['password'].touched && f['password'].errors
+                  }"
+                />
                 <button
                   class="btn btn-outline-secondary"
                   type="button"
                   (click)="togglePasswordVisibility()"
                 >
-                  <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+                  <i
+                    class="bi"
+                    [class.bi-eye]="!showPassword"
+                    [class.bi-eye-slash]="showPassword"
+                  ></i>
                 </button>
               </div>
-              <div *ngIf="f['password'].touched && f['password'].errors" class="invalid-feedback d-block">
-                <small><i class="bi bi-exclamation-circle-fill me-1"></i>
-                  <span *ngIf="f['password'].errors?.['required']">Ce champ est obligatoire</span>
+              <div
+                *ngIf="f['password'].touched && f['password'].errors"
+                class="invalid-feedback d-block"
+              >
+                <small
+                  ><i class="bi bi-exclamation-circle-fill me-1"></i>
+                  <span *ngIf="f['password'].errors?.['required']"
+                    >Ce champ est obligatoire</span
+                  >
                 </small>
               </div>
             </div>
@@ -81,20 +119,34 @@
             <!-- Options -->
             <div class="d-flex justify-content-between align-items-center mb-4">
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="rememberMe">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="rememberMe"
+                />
                 <label class="form-check-label text-secondary" for="rememberMe">
                   Se souvenir de moi
                 </label>
               </div>
-              <a routerLink="/forgot-password" class="text-decoration-none text-primary fw-bold">
+              <a
+                routerLink="/forgot-password"
+                class="text-decoration-none text-primary fw-bold"
+              >
                 Mot de passe oublié ?
               </a>
             </div>
 
             <!-- Bouton de soumission -->
             <div class="d-grid mb-4">
-              <button type="submit" class="btn btn-primary btn-lg rounded-pill py-3 fw-bold" [disabled]="isLoading">
-                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg rounded-pill py-3 fw-bold"
+                [disabled]="isLoading"
+              >
+                <span
+                  *ngIf="isLoading"
+                  class="spinner-border spinner-border-sm me-2"
+                ></span>
                 <i class="bi bi-box-arrow-in-right me-2"></i>
                 Se connecter
               </button>
@@ -104,7 +156,10 @@
             <div class="text-center mb-4">
               <p class="text-muted">
                 Pas encore de compte ?
-                <a routerLink="/signup" class="text-decoration-none fw-bold text-primary ms-1">
+                <a
+                  routerLink="/signup"
+                  class="text-decoration-none fw-bold text-primary ms-1"
+                >
                   S'inscrire maintenant
                 </a>
               </p>

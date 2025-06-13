@@ -69,12 +69,11 @@
                 <th>Espace</th>
                 <th>Participants</th>
                 <th>Prix</th>
-                <th>Statut</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let event of events">
+              <tr *ngFor="let event of paginatedEvents">
                 <td>{{ event.titre }}</td>
                 <td>
                   <div>{{ event.startDate | frenchDate }}</div>
@@ -90,17 +89,7 @@
                 <td>
                   {{ event.price | currency : "TND " : "symbol" : "1.3" }}
                 </td>
-                <td>
-                  <span
-                    class="badge"
-                    [ngClass]="{
-                      'bg-success': event.isActive,
-                      'bg-secondary': !event.isActive
-                    }"
-                  >
-                    {{ event.isActive ? "Actif" : "Inactif" }}
-                  </span>
-                </td>
+                
                 <td>
                   <div class="btn-group btn-group-sm">
                     <button
@@ -115,23 +104,75 @@
                     >
                       <i class="bi bi-trash"></i>
                     </button>
-                    <button
-                      class="btn btn-outline-secondary"
-                      (click)="toggleEventStatus(event)"
-                    >
-                      <i
-                        class="bi"
-                        [ngClass]="{
-                          'bi-toggle-off': !event.isActive,
-                          'bi-toggle-on': event.isActive
-                        }"
-                      ></i>
-                    </button>
+                    
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+        <div
+          *ngIf="events.length > 0"
+          class="d-flex justify-content-between align-items-center mt-3"
+        >
+          <div class="text-muted">
+            Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à
+            {{ min(currentPage * itemsPerPage, totalItems) }} sur
+            {{ totalItems }} événements
+          </div>
+
+          <ngb-pagination
+            [collectionSize]="totalItems"
+            [(page)]="currentPage"
+            [pageSize]="itemsPerPage"
+            [maxSize]="5"
+            [rotate]="true"
+            [boundaryLinks]="true"
+            (pageChange)="pageChanged($event)"
+            class="pagination-sm"
+          ></ngb-pagination>
+
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-secondary btn-sm dropdown-toggle"
+              type="button"
+              id="eventsPerPageDropdown"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              {{ itemsPerPage }} par page
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="eventsPerPageDropdown">
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 5; currentPage = 1"
+                  >5 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 10; currentPage = 1"
+                  >10 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 20; currentPage = 1"
+                  >20 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 50; currentPage = 1"
+                  >50 par page</a
+                >
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -180,10 +221,7 @@
             </thead>
             <tbody>
               <tr
-                *ngFor="
-                  let participant of selectedEventParticipants;
-                  let i = index
-                "
+                *ngFor="let participant of paginatedParticipants; let i = index"
               >
                 <td>{{ participant.userLastName }}</td>
                 <td>{{ participant.userFirstName }}</td>
@@ -194,7 +232,8 @@
                     class="btn btn-outline-danger btn-sm"
                     (click)="
                       selectedEventId && participant.userId
-                        ? unregisterParticipant(
+                        ? openUnregisterModal(
+                            unregisterModal,
                             selectedEventId,
                             participant.userId,
                             i
@@ -209,7 +248,84 @@
             </tbody>
           </table>
         </div>
+        <div
+          *ngIf="selectedEventParticipants.length > 0"
+          class="d-flex justify-content-between align-items-center mt-3"
+        >
+          <div class="text-muted">
+            Affichage de
+            {{ (currentParticipantsPage - 1) * participantsPerPage + 1 }} à
+            {{
+              min(
+                currentParticipantsPage * participantsPerPage,
+                totalParticipants
+              )
+            }}
+            sur {{ totalParticipants }} participants
+          </div>
 
+          <ngb-pagination
+            [collectionSize]="totalParticipants"
+            [(page)]="currentParticipantsPage"
+            [pageSize]="participantsPerPage"
+            [maxSize]="5"
+            [rotate]="true"
+            [boundaryLinks]="true"
+            (pageChange)="participantsPageChanged($event)"
+            class="pagination-sm"
+          ></ngb-pagination>
+
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-secondary btn-sm dropdown-toggle"
+              type="button"
+              id="participantsPerPageDropdown"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              {{ participantsPerPage }} par page
+            </button>
+            <ul
+              class="dropdown-menu"
+              aria-labelledby="participantsPerPageDropdown"
+            >
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="participantsPerPage = 5; currentParticipantsPage = 1"
+                  >5 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="
+                    participantsPerPage = 10; currentParticipantsPage = 1
+                  "
+                  >10 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="
+                    participantsPerPage = 20; currentParticipantsPage = 1
+                  "
+                  >20 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="
+                    participantsPerPage = 50; currentParticipantsPage = 1
+                  "
+                  >50 par page</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
         <div
           *ngIf="
             !isLoadingParticipants &&
@@ -484,3 +600,33 @@
     </ng-template>
   </div>
 </div>
+
+<!-- Modal : Confirmation de désinscription -->
+<ng-template #unregisterModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Confirmer la désinscription</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p>
+      Êtes-vous sûr de vouloir désinscrire ce participant ? Cette action est
+      irréversible.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss()"
+    >
+      Annuler
+    </button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="confirmUnregister(); modal.close()"
+    >
+      Désinscrire
+    </button>
+  </div>
+</ng-template>

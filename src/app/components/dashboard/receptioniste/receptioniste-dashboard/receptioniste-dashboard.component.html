@@ -81,7 +81,9 @@
 
         <ng-template #notLoggedIn>
           <div class="d-flex gap-2">
-            <a routerLink="/signin" class="btn btn-outline-primary">Connexion</a>
+            <a routerLink="/signin" class="btn btn-outline-primary"
+              >Connexion</a
+            >
             <a routerLink="/signup" class="btn btn-primary">Inscription</a>
           </div>
         </ng-template>
@@ -101,55 +103,101 @@
       <!-- Modal de validation de paiement -->
       <ng-template #validationModal let-modal>
         <div class="modal-header">
-          <h5 class="modal-title" id="validationModalLabel">Validation de paiement</h5>
-          <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+          <h5 class="modal-title" id="validationModalLabel">
+            Validation de paiement
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            (click)="modal.dismiss()"
+          ></button>
         </div>
         <div class="modal-body">
           <p>Confirmer la validation de ce paiement ?</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-success" (click)="validatePaiement(); modal.close()">
+          <button
+            type="button"
+            class="btn btn-success"
+            (click)="validatePaiement(); modal.close()"
+          >
             Valider
           </button>
-          <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="modal.dismiss()"
+          >
             Annuler
           </button>
         </div>
       </ng-template>
 
       <!-- Modal d'envoi de facture -->
-<ng-template #sendInvoiceModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title" id="sendInvoiceModalLabel">Envoyer la facture</h5>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body">
-    <p>Confirmer l'envoi de la facture à <strong>{{invoiceEmail}}</strong> ?</p>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="sendInvoice(); modal.close()">
-      <i class="bi bi-send me-1"></i> Confirmer l'envoi
-    </button>
-    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
-      Annuler
-    </button>
-  </div>
-</ng-template>
+      <ng-template #sendInvoiceModal let-modal>
+        <div class="modal-header">
+          <h5 class="modal-title" id="sendInvoiceModalLabel">
+            Envoyer la facture
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            (click)="modal.dismiss()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Confirmer l'envoi de la facture à
+            <strong>{{ invoiceEmail }}</strong> ?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="sendInvoice(); modal.close()"
+          >
+            <i class="bi bi-send me-1"></i> Confirmer l'envoi
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="modal.dismiss()"
+          >
+            Annuler
+          </button>
+        </div>
+      </ng-template>
 
       <!-- Modal de suppression -->
       <ng-template #deleteModal let-modal>
         <div class="modal-header">
           <h5 class="modal-title">Confirmation de suppression</h5>
-          <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            (click)="modal.dismiss()"
+          ></button>
         </div>
         <div class="modal-body">
           <p>Êtes-vous sûr de vouloir supprimer cet élément ?</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger" (click)="deleteFacture(); modal.close()">
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="deleteFacture(); modal.close()"
+          >
             Confirmer
           </button>
-          <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="modal.dismiss()"
+          >
             Annuler
           </button>
         </div>
@@ -158,22 +206,38 @@
       <!-- Onglets -->
       <ul class="nav nav-tabs mb-4">
         <li class="nav-item">
-          <a class="nav-link" [class.active]="currentTab === 'paiements'" (click)="changeTab('paiements')">
+          <a
+            class="nav-link"
+            [class.active]="currentTab === 'paiements'"
+            (click)="changeTab('paiements')"
+          >
             <i class="bi bi-credit-card me-1"></i> Paiements
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" [class.active]="currentTab === 'factures'" (click)="changeTab('factures')">
+          <a
+            class="nav-link"
+            [class.active]="currentTab === 'factures'"
+            (click)="changeTab('factures')"
+          >
             <i class="bi bi-receipt me-1"></i> Factures
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" [class.active]="currentTab === 'valides'" (click)="changeTab('valides')">
+          <a
+            class="nav-link"
+            [class.active]="currentTab === 'valides'"
+            (click)="changeTab('valides')"
+          >
             <i class="bi bi-check-circle me-1"></i> Validés
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" [class.active]="currentTab === 'impayes'" (click)="changeTab('impayes')">
+          <a
+            class="nav-link"
+            [class.active]="currentTab === 'impayes'"
+            (click)="changeTab('impayes')"
+          >
             <i class="bi bi-exclamation-triangle me-1"></i> Impayés
           </a>
         </li>
@@ -203,10 +267,16 @@
               </h5>
             </div>
             <div class="card-body p-0">
-              <div *ngIf="getPendingPayments().length === 0" class="alert alert-info m-3">
+              <div
+                *ngIf="getPendingPayments().length === 0"
+                class="alert alert-info m-3"
+              >
                 <i class="bi bi-info-circle me-2"></i>Aucun paiement en attente.
               </div>
-              <div *ngIf="getPendingPayments().length > 0" class="table-responsive">
+              <div
+                *ngIf="getPendingPayments().length > 0"
+                class="table-responsive"
+              >
                 <table class="table table-hover mb-0">
                   <thead class="table-light">
                     <tr>
@@ -218,19 +288,26 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let paiement of getPendingPayments()">
+                    <tr *ngFor="let paiement of paginatedPendingPayments">
                       <td>{{ getPaymentInfo(paiement) }}</td>
                       <td>{{ paiement.montant }} TND</td>
                       <td>{{ formatDate(paiement.date) }}</td>
                       <td>
-                        <span class="badge" [ngClass]="getStatusBadgeClass(paiement.statut)">
+                        <span
+                          class="badge"
+                          [ngClass]="getStatusBadgeClass(paiement.statut)"
+                        >
                           {{ paiement.statut | lowercase }}
                         </span>
                       </td>
                       <td>
                         <div class="d-flex gap-2">
-                          <button class="btn btn-sm btn-success" 
-                                  (click)="openValidationModal(paiement.id!, validationModal)">
+                          <button
+                            class="btn btn-sm btn-success"
+                            (click)="
+                              openValidationModal(paiement.id!, validationModal)
+                            "
+                          >
                             <i class="bi bi-check-circle"></i> Valider
                           </button>
                         </div>
@@ -238,6 +315,71 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+              <div
+                *ngIf="getPendingPayments().length > 0"
+                class="d-flex justify-content-between align-items-center mt-3"
+              >
+                <div class="text-muted">
+                  Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à
+                  {{ getPageEnd() }} sur {{ totalItems }} paiements
+                </div>
+
+                <ngb-pagination
+                  [collectionSize]="totalItems"
+                  [(page)]="currentPage"
+                  [pageSize]="itemsPerPage"
+                  [maxSize]="5"
+                  [rotate]="true"
+                  [boundaryLinks]="true"
+                  (pageChange)="pageChanged($event)"
+                  class="pagination-sm"
+                ></ngb-pagination>
+
+                <div class="dropdown">
+                  <button
+                    class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                    type="button"
+                    id="itemsPerPageDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    {{ itemsPerPage }} par page
+                  </button>
+                  <ul
+                    class="dropdown-menu"
+                    aria-labelledby="itemsPerPageDropdown"
+                  >
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="itemsPerPage = 5; currentPage = 1"
+                        >5 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="itemsPerPage = 10; currentPage = 1"
+                        >10 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="itemsPerPage = 20; currentPage = 1"
+                        >20 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="itemsPerPage = 50; currentPage = 1"
+                        >50 par page</a
+                      >
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -267,18 +409,29 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let facture of factures">
+                    <tr *ngFor="let facture of paginatedFactures">
                       <td>#{{ facture.id }}</td>
                       <td>Paiement #{{ facture.paiementId }}</td>
                       <td>{{ facture.emailDestinataire }}</td>
                       <td>{{ formatDate(facture.dateEnvoi) }}</td>
                       <td>
                         <div class="d-flex gap-2">
-                          <a (click)="downloadPdf(facture.id!)" class="btn btn-sm btn-primary">
-    <i class="bi bi-download"></i> PDF
-</a>
-                          <button class="btn btn-sm btn-danger" 
-                                  (click)="openDeleteModal(facture.id!, 'facture', deleteModal)">
+                          <a
+                            (click)="downloadPdf(facture.id!)"
+                            class="btn btn-sm btn-primary"
+                          >
+                            <i class="bi bi-download"></i> PDF
+                          </a>
+                          <button
+                            class="btn btn-sm btn-danger"
+                            (click)="
+                              openDeleteModal(
+                                facture.id!,
+                                'facture',
+                                deleteModal
+                              )
+                            "
+                          >
                             <i class="bi bi-trash"></i>
                           </button>
                         </div>
@@ -286,6 +439,72 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+              <div
+                *ngIf="factures.length > 0"
+                class="d-flex justify-content-between align-items-center mt-3"
+              >
+                <div class="text-muted">
+                  Affichage de
+                  {{ (currentFacturesPage - 1) * facturesPerPage + 1 }} à
+                  {{ getFacturesPageEnd() }} sur {{ totalFactures }} factures
+                </div>
+
+                <ngb-pagination
+                  [collectionSize]="totalFactures"
+                  [(page)]="currentFacturesPage"
+                  [pageSize]="facturesPerPage"
+                  [maxSize]="5"
+                  [rotate]="true"
+                  [boundaryLinks]="true"
+                  (pageChange)="facturesPageChanged($event)"
+                  class="pagination-sm"
+                ></ngb-pagination>
+
+                <div class="dropdown">
+                  <button
+                    class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                    type="button"
+                    id="facturesPerPageDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    {{ facturesPerPage }} par page
+                  </button>
+                  <ul
+                    class="dropdown-menu"
+                    aria-labelledby="facturesPerPageDropdown"
+                  >
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="facturesPerPage = 5; currentFacturesPage = 1"
+                        >5 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="facturesPerPage = 10; currentFacturesPage = 1"
+                        >10 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="facturesPerPage = 20; currentFacturesPage = 1"
+                        >20 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="facturesPerPage = 50; currentFacturesPage = 1"
+                        >50 par page</a
+                      >
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -300,10 +519,16 @@
               </h5>
             </div>
             <div class="card-body p-0">
-              <div *ngIf="getValidatedPayments().length === 0" class="alert alert-info m-3">
+              <div
+                *ngIf="getValidatedPayments().length === 0"
+                class="alert alert-info m-3"
+              >
                 <i class="bi bi-info-circle me-2"></i>Aucun paiement validé.
               </div>
-              <div *ngIf="getValidatedPayments().length > 0" class="table-responsive">
+              <div
+                *ngIf="getValidatedPayments().length > 0"
+                class="table-responsive"
+              >
                 <table class="table table-hover mb-0">
                   <thead class="table-light">
                     <tr>
@@ -315,19 +540,29 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let paiement of getValidatedPayments()">
+                    <tr *ngFor="let paiement of paginatedValides">
                       <td>{{ getPaymentInfo(paiement) }}</td>
                       <td>{{ paiement.montant }} TND</td>
                       <td>{{ formatDate(paiement.date) }}</td>
                       <td>
-                        <span class="badge" [ngClass]="getStatusBadgeClass(paiement.statut)">
+                        <span
+                          class="badge"
+                          [ngClass]="getStatusBadgeClass(paiement.statut)"
+                        >
                           {{ paiement.statut | lowercase }}
                         </span>
                       </td>
                       <td>
                         <div class="d-flex gap-2">
-                          <button class="btn btn-sm btn-primary" 
-                                  (click)="openSendInvoiceModal(paiement.id!, sendInvoiceModal)">
+                          <button
+                            class="btn btn-sm btn-primary"
+                            (click)="
+                              openSendInvoiceModal(
+                                paiement.id!,
+                                sendInvoiceModal
+                              )
+                            "
+                          >
                             <i class="bi bi-envelope"></i> Envoyer facture
                           </button>
                         </div>
@@ -335,6 +570,73 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+              <div
+                *ngIf="getValidatedPayments().length > 0"
+                class="d-flex justify-content-between align-items-center mt-3"
+              >
+                <div class="text-muted">
+                  Affichage de
+                  {{ (currentValidesPage - 1) * validesPerPage + 1 }} à
+                  {{ getValidesPageEnd() }} sur {{ totalValides }} paiements
+                  validés
+                </div>
+
+                <ngb-pagination
+                  [collectionSize]="totalValides"
+                  [(page)]="currentValidesPage"
+                  [pageSize]="validesPerPage"
+                  [maxSize]="5"
+                  [rotate]="true"
+                  [boundaryLinks]="true"
+                  (pageChange)="validesPageChanged($event)"
+                  class="pagination-sm"
+                ></ngb-pagination>
+
+                <div class="dropdown">
+                  <button
+                    class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                    type="button"
+                    id="validesPerPageDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    {{ validesPerPage }} par page
+                  </button>
+                  <ul
+                    class="dropdown-menu"
+                    aria-labelledby="validesPerPageDropdown"
+                  >
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="validesPerPage = 5; currentValidesPage = 1"
+                        >5 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="validesPerPage = 10; currentValidesPage = 1"
+                        >10 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="validesPerPage = 20; currentValidesPage = 1"
+                        >20 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="validesPerPage = 50; currentValidesPage = 1"
+                        >50 par page</a
+                      >
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -345,14 +647,22 @@
           <div class="card shadow-sm">
             <div class="card-header bg-white">
               <h5 class="mb-0">
-                <i class="bi bi-exclamation-triangle me-2"></i>Réservations impayées
+                <i class="bi bi-exclamation-triangle me-2"></i>Réservations
+                impayées
               </h5>
             </div>
             <div class="card-body p-0">
-              <div *ngIf="getUnpaidReservations().length === 0" class="alert alert-info m-3">
-                <i class="bi bi-info-circle me-2"></i>Aucune réservation impayée.
+              <div
+                *ngIf="getUnpaidReservations().length === 0"
+                class="alert alert-info m-3"
+              >
+                <i class="bi bi-info-circle me-2"></i>Aucune réservation
+                impayée.
               </div>
-              <div *ngIf="getUnpaidReservations().length > 0" class="table-responsive">
+              <div
+                *ngIf="getUnpaidReservations().length > 0"
+                class="table-responsive"
+              >
                 <table class="table table-hover mb-0">
                   <thead class="table-light">
                     <tr>
@@ -364,27 +674,107 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let reservation of getUnpaidReservations()">
+                    <tr *ngFor="let reservation of paginatedImpayes">
                       <td>
-                        <strong>{{ reservation.userFirstName }} {{ reservation.userLastName }}</strong>
-                        <div class="text-muted small">{{ reservation.userEmail }}</div>
-                        <div class="text-muted small">{{ reservation.userPhone }}</div>
+                        <strong
+                          >{{ reservation.userFirstName }}
+                          {{ reservation.userLastName }}</strong
+                        >
+                        <div class="text-muted small">
+                          {{ reservation.userEmail }}
+                        </div>
+                        <div class="text-muted small">
+                          {{ reservation.userPhone }}
+                        </div>
                       </td>
                       <td>
                         <strong>{{ reservation.espaceName }}</strong>
-                        <div class="text-muted small">{{ reservation.espaceType | lowercase }}</div>
+                        <div class="text-muted small">
+                          {{ reservation.espaceType | lowercase }}
+                        </div>
                       </td>
                       <td>
                         <div>{{ formatDate(reservation.dateDebut) }}</div>
-                        <div class="text-muted small">au {{ formatDate(reservation.dateFin) }}</div>
+                        <div class="text-muted small">
+                          au {{ formatDate(reservation.dateFin) }}
+                        </div>
                       </td>
-                      <td class="fw-bold">{{ reservation.paiementMontant }} TND</td>
+                      <td class="fw-bold">
+                        {{ reservation.paiementMontant }} TND
+                      </td>
                       <td>
                         <span class="badge bg-danger">Impayé</span>
                       </td>
                     </tr>
                   </tbody>
                 </table>
+              </div>
+              <div
+                *ngIf="getUnpaidReservations().length > 0"
+                class="d-flex justify-content-between align-items-center mt-3"
+              >
+                <div class="text-muted">
+                  Affichage de
+                  {{ (currentImpayesPage - 1) * impayesPerPage + 1 }} à
+                  {{ getImpayesPageEnd() }} sur {{ totalImpayes }} réservations
+                  impayées
+                </div>
+
+                <ngb-pagination
+                  [collectionSize]="totalImpayes"
+                  [(page)]="currentImpayesPage"
+                  [pageSize]="impayesPerPage"
+                  [maxSize]="5"
+                  [rotate]="true"
+                  [boundaryLinks]="true"
+                  (pageChange)="impayesPageChanged($event)"
+                  class="pagination-sm"
+                ></ngb-pagination>
+
+                <div class="dropdown">
+                  <button
+                    class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                    type="button"
+                    id="impayesPerPageDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    {{ impayesPerPage }} par page
+                  </button>
+                  <ul
+                    class="dropdown-menu"
+                    aria-labelledby="impayesPerPageDropdown"
+                  >
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="impayesPerPage = 5; currentImpayesPage = 1"
+                        >5 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="impayesPerPage = 10; currentImpayesPage = 1"
+                        >10 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="impayesPerPage = 20; currentImpayesPage = 1"
+                        >20 par page</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        (click)="impayesPerPage = 50; currentImpayesPage = 1"
+                        >50 par page</a
+                      >
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>

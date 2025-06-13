@@ -139,142 +139,174 @@
           <i class="bi bi-arrow-right ms-2"></i>
         </a>
       </div>
-    
-<div class="row g-4">
-  <div class="col-md-6 col-lg-4" *ngFor="let space of featuredSpaces">
-    <div class="card h-100 border-0 shadow-sm">
-      <img
-        [src]="space.photoPrincipal"
-        class="card-img-top"
-        alt="{{ space.name }}"
-        style="height: 200px; object-fit: cover"
-      />
-      <div class="card-body">
-        <h3 class="h5 fw-bold mb-2">{{ space.name }}</h3>
-        <p class="text-muted mb-3">
-          {{ space.type === 'PRIVE' ? 'Espace Privé' : 'Espace Ouvert' }}
-        </p>
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <span *ngIf="isPrivateSpace(space)"
-            class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
-            {{ space.prixParJour | currency : "TND" : "symbol" : "1.2-2" }} / jour
-          </span>
-          <span *ngIf="!isPrivateSpace(space)"
-            class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
-            Accès libre
-          </span>
-          <span class="text-muted">
-            <i class="bi bi-people me-1"></i>
-            {{ space.capacity }} pers.
-          </span>
-        </div>
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="text-muted">
-            <i class="bi bi-star-fill text-warning me-1"></i>
-            {{ getSpaceRating(space.id || 0) }}
-          </span>
+
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-4" *ngFor="let space of featuredSpaces">
+          <div class="card h-100 border-0 shadow-sm">
+            <img
+              [src]="space.photoPrincipal"
+              class="card-img-top"
+              alt="{{ space.name }}"
+              style="height: 200px; object-fit: cover"
+            />
+            <div class="card-body">
+              <h3 class="h5 fw-bold mb-2">{{ space.name }}</h3>
+              <p class="text-muted mb-3">
+                {{ space.type === "PRIVE" ? "Espace Privé" : "Espace Ouvert" }}
+              </p>
+              <div
+                class="d-flex justify-content-between align-items-center mb-3"
+              >
+                <span
+                  *ngIf="isPrivateSpace(space)"
+                  class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill"
+                >
+                  {{
+                    space.prixParJour | currency : "TND" : "symbol" : "1.2-2"
+                  }}
+                  / jour
+                </span>
+                <span
+                  *ngIf="!isPrivateSpace(space)"
+                  class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill"
+                >
+                  Accès libre
+                </span>
+                <span class="text-muted">
+                  <i class="bi bi-people me-1"></i>
+                  {{ space.capacity }} pers.
+                </span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted">
+                  <i class="bi bi-star-fill text-warning me-1"></i>
+                  {{ getSpaceRating(space.id || 0) }}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
     </div>
   </section>
 
-   <!-- Featured Events Section -->
-<section class="py-5 bg-white">
-  <div class="container">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-end mb-5">
-      <div class="mb-4 mb-md-0">
-        <h2 class="display-5 fw-bold mb-3">Événements à Venir</h2>
-        <p class="lead text-muted">
-          Participez à nos événements phares pour réseauter, apprendre et
-          développer votre activité.
-        </p>
+  <!-- Featured Events Section -->
+  <section class="py-5 bg-white">
+    <div class="container">
+      <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-end mb-5"
+      >
+        <div class="mb-4 mb-md-0">
+          <h2 class="display-5 fw-bold mb-3">Événements à Venir</h2>
+          <p class="lead text-muted">
+            Participez à nos événements phares pour réseauter, apprendre et
+            développer votre activité.
+          </p>
+        </div>
+        <a routerLink="/events" class="btn btn-outline-primary">
+          Voir tous les événements
+          <i class="bi bi-arrow-right ms-2"></i>
+        </a>
       </div>
-      <a routerLink="/events" class="btn btn-outline-primary">
-        Voir tous les événements
-        <i class="bi bi-arrow-right ms-2"></i>
-      </a>
-    </div>
-    
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="row g-4">
-      <div *ngFor="let item of [1,2,3]" class="col-md-6 col-lg-4">
-        <div class="card h-100 placeholder-glow">
-          <div class="card-img-top placeholder" style="height: 200px; background-color: #eee;"></div>
-          <div class="card-body">
-            <h5 class="card-title placeholder col-8 bg-secondary"></h5>
-            <p class="card-text placeholder col-10 bg-secondary"></p>
-            <p class="card-text placeholder col-6 bg-secondary"></p>
-            <div class="d-flex justify-content-between mt-3">
-              <span class="placeholder col-4 bg-secondary"></span>
-              <span class="placeholder col-3 bg-secondary"></span>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="row g-4">
+        <div *ngFor="let item of [1, 2, 3]" class="col-md-6 col-lg-4">
+          <div class="card h-100 placeholder-glow">
+            <div
+              class="card-img-top placeholder"
+              style="height: 200px; background-color: #eee"
+            ></div>
+            <div class="card-body">
+              <h5 class="card-title placeholder col-8 bg-secondary"></h5>
+              <p class="card-text placeholder col-10 bg-secondary"></p>
+              <p class="card-text placeholder col-6 bg-secondary"></p>
+              <div class="d-flex justify-content-between mt-3">
+                <span class="placeholder col-4 bg-secondary"></span>
+                <span class="placeholder col-3 bg-secondary"></span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <!-- Events Grid -->
-    <div class="row g-4" *ngIf="!isLoading && featuredEvents?.length">
-      <div class="col-md-6 col-lg-4" *ngFor="let event of featuredEvents">
-        <div class="card h-100 border-0 shadow-sm">
-          <div class="card-body d-flex flex-column">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <h3 class="h5 fw-bold mb-0">{{ event.titre }}</h3>
-              <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill">
-                {{ event.price === 0 ? 'Gratuit' : (event.price | currency:'TND':'symbol':'1.2-2') }}
-              </span>
-            </div>
-            
-            <p class="text-muted mb-3">
-              <i class="bi bi-calendar-event me-2"></i>
-              {{ formatDate(event.startDate) }}<br>
-              <i class="bi bi-clock me-2"></i>
-              {{ event.startDate | date:'HH:mm' }} - {{ event.endDate | date:'HH:mm' }}<br>
-              <i class="bi bi-geo-alt me-2"></i>
-              {{ event.espaceName || 'Espace Coworking' }}
-            </p>
-            
-            <!-- Barre de progression corrigée -->
-            <div class="mb-3">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <small class="text-muted">Places disponibles</small>
-                <small class="text-muted">
-                  {{ event.participants?.length || 0 }}/{{ event.maxParticipants }}
-                </small>
+
+      <!-- Events Grid -->
+      <div class="row g-4" *ngIf="!isLoading && featuredEvents?.length">
+        <div class="col-md-6 col-lg-4" *ngFor="let event of featuredEvents">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <div
+                class="d-flex justify-content-between align-items-start mb-2"
+              >
+                <h3 class="h5 fw-bold mb-0">{{ event.titre }}</h3>
+                <span
+                  class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill"
+                >
+                  {{
+                    event.price === 0
+                      ? "Gratuit"
+                      : (event.price | currency : "TND" : "symbol" : "1.2-2")
+                  }}
+                </span>
               </div>
-              <div class="progress" style="height: 8px">
+
+              <p class="text-muted mb-3">
+                <i class="bi bi-calendar-event me-2"></i>
+                {{ formatDate(event.startDate) }}<br />
+                <i class="bi bi-clock me-2"></i>
+                {{ event.startDate | date : "HH:mm" }} -
+                {{ event.endDate | date : "HH:mm" }}<br />
+                <i class="bi bi-geo-alt me-2"></i>
+                {{ event.espaceName || "Espace Coworking" }}
+              </p>
+
+              <!-- Barre de progression corrigée -->
+              <div class="mb-3">
                 <div
-                  class="progress-bar"
-                  [ngClass]="{
-                    'bg-primary': getProgressPercentage(event) < 80,
-                    'bg-warning': getProgressPercentage(event) >= 80 && getProgressPercentage(event) < 100,
-                    'bg-danger': getProgressPercentage(event) >= 100
-                  }"
-                  [style.width.%]="getProgressPercentage(event)"
-                ></div>
+                  class="d-flex justify-content-between align-items-center mb-1"
+                >
+                  <small class="text-muted">Places disponibles</small>
+                  <small class="text-muted">
+                    {{ event.participants?.length || 0 }}/{{
+                      event.maxParticipants
+                    }}
+                  </small>
+                </div>
+                <div class="progress" style="height: 8px">
+                  <div
+                    class="progress-bar"
+                    [ngClass]="{
+                      'bg-primary': getProgressPercentage(event) < 80,
+                      'bg-warning':
+                        getProgressPercentage(event) >= 80 &&
+                        getProgressPercentage(event) < 100,
+                      'bg-danger': getProgressPercentage(event) >= 100
+                    }"
+                    [style.width.%]="getProgressPercentage(event)"
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Empty State -->
+      <div
+        *ngIf="!isLoading && featuredEvents && featuredEvents.length === 0"
+        class="text-center py-5 bg-light rounded"
+      >
+        <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 3rem"></i>
+        <h3 class="h4 fw-bold mb-2">Aucun événement à venir</h3>
+        <p class="text-muted mb-4">
+          Aucun événement n'est prévu pour le moment. Revenez plus tard !
+        </p>
+        <button class="btn btn-outline-primary" routerLink="/events">
+          Voir tous les événements
+        </button>
+      </div>
     </div>
-    
-    <!-- Empty State -->
-    <div *ngIf="!isLoading && featuredEvents && featuredEvents.length === 0" class="text-center py-5 bg-light rounded">
-      <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 3rem;"></i>
-      <h3 class="h4 fw-bold mb-2">Aucun événement à venir</h3>
-      <p class="text-muted mb-4">
-        Aucun événement n'est prévu pour le moment. Revenez plus tard !
-      </p>
-      <button class="btn btn-outline-primary" routerLink="/events">
-        Voir tous les événements
-      </button>
-    </div>
-  </div>
-</section>
+  </section>
 
   <!-- Testimonials Section -->
   <section class="py-5 bg-light">
@@ -324,7 +356,10 @@
         <div
           class="d-flex flex-column flex-sm-row gap-3 justify-content-center"
         >
-          <button class="btn btn-light btn-lg text-primary fw-bold" routerLink="/signup">
+          <button
+            class="btn btn-light btn-lg text-primary fw-bold"
+            routerLink="/signup"
+          >
             Créer un compte
           </button>
           <button class="btn btn-outline-light btn-lg" routerLink="/about">

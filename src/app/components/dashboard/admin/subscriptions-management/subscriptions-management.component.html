@@ -1,277 +1,506 @@
 <div class="container-fluid py-4">
-    <div class="mb-3">
-        <a routerLink="/admin-dashboard" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Retour au tableau de bord
-        </a>
+  <div class="mb-3">
+    <a routerLink="/admin-dashboard" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Retour au tableau de bord
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Gestion des Abonnements</h5>
+      <div>
+        <button class="btn btn-primary me-2" (click)="openAddModal(addModal)">
+          <i class="bi bi-plus-circle me-2"></i>Ajouter un abonnement
+        </button>
+        <button
+          class="btn btn-success"
+          (click)="openAddForAllModal(addForAllModal)"
+        >
+          <i class="bi bi-people-fill me-2"></i>Ajouter pour tous les coworkers
+        </button>
+      </div>
     </div>
 
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Gestion des Abonnements</h5>
-            <div>
-                <button class="btn btn-primary me-2" (click)="openAddModal(addModal)">
-                    <i class="bi bi-plus-circle me-2"></i>Ajouter un abonnement
+    <div class="card-body">
+      <div class="mb-3">
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Rechercher..."
+            [(ngModel)]="searchTerm"
+          />
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Utilisateur</th>
+              <th>Espace</th>
+              <th>Type d'abonnement</th>
+              <th>Prix</th>
+              <th>Date Début</th>
+              <th>Date Fin</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let abonnement of paginatedAbonnements">
+              <td>{{ getUserName(abonnement.userId) }}</td>
+              <td>{{ getEspaceName(abonnement.espaceOuvertId) }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="
+                    abonnement.type === 'MENSUEL' ? 'bg-primary' : 'bg-success'
+                  "
+                >
+                  {{ abonnement.type }}
+                </span>
+              </td>
+              <td>{{ abonnement.prix }} TND</td>
+              <td>{{ abonnement.dateDebut | date : "dd/MM/yyyy" }}</td>
+              <td>{{ abonnement.dateFin | date : "dd/MM/yyyy" }}</td>
+              <td>
+                <button
+                  class="btn btn-sm btn-outline-primary me-2"
+                  (click)="openEditModal(editModal, abonnement)"
+                >
+                  <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-success" (click)="openAddForAllModal(addForAllModal)">
-                    <i class="bi bi-people-fill me-2"></i>Ajouter pour tous les coworkers
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="
+                    deleteAbonnement(abonnement.id!, deleteConfirmationModal)
+                  "
+                >
+                  <i class="bi bi-trash"></i>
                 </button>
-            </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredAbonnements.length === 0">
+              <td colspan="7" class="text-center">Aucun abonnement trouvé</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Après la fermeture de la table (avant le </div> final du card-body) -->
+      <div
+        *ngIf="filteredAbonnements.length > 0"
+        class="d-flex justify-content-between align-items-center mt-3"
+      >
+        <div class="text-muted">
+          Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à
+          {{ getMin(currentPage * itemsPerPage, totalItems) }} sur
+          {{ totalItems }} abonnements
         </div>
 
-        <div class="card-body">
-            <div class="mb-3">
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Rechercher..." 
-                           [(ngModel)]="searchTerm">
-                </div>
-            </div>
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [(page)]="currentPage"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="pageChanged($event)"
+          class="pagination-sm"
+        ></ngb-pagination>
 
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Utilisateur</th>
-                            <th>Espace</th>
-                            <th>Type d'abonnement</th>
-                            <th>Prix</th>
-                            <th>Date Début</th>
-                            <th>Date Fin</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let abonnement of filteredAbonnements">
-                            <td>{{ getUserName(abonnement.userId) }}</td>
-                            <td>{{ getEspaceName(abonnement.espaceOuvertId) }}</td>
-                            <td>
-                                <span class="badge" 
-                                      [ngClass]="abonnement.type === 'MENSUEL' ? 'bg-primary' : 'bg-success'">
-                                    {{ abonnement.type }}
-                                </span>
-                            </td>
-                            <td>{{ abonnement.prix }} TND</td>
-                            <td>{{ abonnement.dateDebut | date:'dd/MM/yyyy' }}</td>
-                            <td>{{ abonnement.dateFin | date:'dd/MM/yyyy' }}</td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary me-2" 
-                                        (click)="openEditModal(editModal, abonnement)">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" 
-                                        (click)="deleteAbonnement(abonnement.id!)">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr *ngIf="filteredAbonnements.length === 0">
-                            <td colspan="7" class="text-center">Aucun abonnement trouvé</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="dropdown">
+          <button
+            class="btn btn-outline-secondary btn-sm dropdown-toggle"
+            type="button"
+            id="itemsPerPageDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            {{ itemsPerPage }} par page
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="itemsPerPageDropdown">
+            <li>
+              <a
+                class="dropdown-item"
+                (click)="itemsPerPage = 5; currentPage = 1"
+                >5 par page</a
+              >
+            </li>
+            <li>
+              <a
+                class="dropdown-item"
+                (click)="itemsPerPage = 10; currentPage = 1"
+                >10 par page</a
+              >
+            </li>
+            <li>
+              <a
+                class="dropdown-item"
+                (click)="itemsPerPage = 20; currentPage = 1"
+                >20 par page</a
+              >
+            </li>
+            <li>
+              <a
+                class="dropdown-item"
+                (click)="itemsPerPage = 50; currentPage = 1"
+                >50 par page</a
+              >
+            </li>
+          </ul>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Modal d'ajout -->
 <ng-template #addModal let-modal>
-     <div class="modal-header">
-        <h5 class="modal-title">Ajouter un abonnement</h5>
-        <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
-    </div>
-    <div class="modal-body">
-        <form (ngSubmit)="saveAbonnement()">
-            <div class="mb-3">
-                <label class="form-label">Utilisateur</label>
-                <select class="form-select" [(ngModel)]="currentAbonnement.userId" name="userId" required>
-                    <option value="0" disabled selected>Sélectionnez un utilisateur</option>
-                    <option *ngFor="let user of users" [value]="user.id">
-                        {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
-                    </option>
-                </select>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Espace ouvert</label>
-                <select class="form-select" [(ngModel)]="currentAbonnement.espaceOuvertId" name="espaceId" required>
-                    <option value="0" disabled selected>Sélectionnez un espace</option>
-                    <option *ngFor="let espace of espacesOuverts" [value]="espace.id">
-                        {{ espace.name }}
-                    </option>
-                </select>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Type d'abonnement</label>
-                <select class="form-select" [(ngModel)]="currentAbonnement.type" name="type" 
-                        (change)="calculateEndDate()" required>
-                    <option value="MENSUEL">Mensuel</option>
-                    <option value="ANNUEL">Annuel</option>
-                </select>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Prix</label>
-                <div class="input-group">
-                    <input type="number" class="form-control" [(ngModel)]="currentAbonnement.prix" 
-                           name="prix" min="0" step="0.01" required>
-                    <span class="input-group-text">€</span>
-                </div>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Date de début</label>
-                <input type="date" class="form-control" [(ngModel)]="currentAbonnement.dateDebut" 
-                       name="dateDebut" (change)="calculateEndDate()" required>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Date de fin</label>
-                <input type="date" class="form-control" [(ngModel)]="currentAbonnement.dateFin" 
-                       name="dateFin" readonly>
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" (click)="modalRef?.hide()">
-            Annuler
+  <div class="modal-header">
+    <h5 class="modal-title">Ajouter un abonnement</h5>
+    <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
+  </div>
+  <div class="modal-body">
+    <form (ngSubmit)="saveAbonnement()">
+      <div class="mb-3">
+        <label class="form-label">Utilisateur</label>
+        <select
+          class="form-select"
+          [(ngModel)]="currentAbonnement.userId"
+          name="userId"
+          required
+        >
+          <option value="0" disabled selected>
+            Sélectionnez un utilisateur
+          </option>
+          <option *ngFor="let user of users" [value]="user.id">
+            {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Espace ouvert</label>
+        <select
+          class="form-select"
+          [(ngModel)]="currentAbonnement.espaceOuvertId"
+          name="espaceId"
+          required
+        >
+          <option value="0" disabled selected>Sélectionnez un espace</option>
+          <option *ngFor="let espace of espacesOuverts" [value]="espace.id">
+            {{ espace.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Type d'abonnement</label>
+        <select
+          class="form-select"
+          [(ngModel)]="currentAbonnement.type"
+          name="type"
+          (change)="calculateEndDate()"
+          required
+        >
+          <option value="MENSUEL">Mensuel</option>
+          <option value="ANNUEL">Annuel</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Prix</label>
+        <div class="input-group">
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="currentAbonnement.prix"
+            name="prix"
+            min="0"
+            step="0.01"
+            required
+          />
+          <span class="input-group-text">€</span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Date de début</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="currentAbonnement.dateDebut"
+          name="dateDebut"
+          (change)="calculateEndDate()"
+          required
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Date de fin</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="currentAbonnement.dateFin"
+          name="dateFin"
+          readonly
+        />
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="modalRef?.hide()"
+        >
+          Annuler
         </button>
-                <button type="submit" class="btn btn-primary">
-                    Ajouter
-                </button>
-            </div>
-        </form>
-    </div>
+        <button type="submit" class="btn btn-primary">Ajouter</button>
+      </div>
+    </form>
+  </div>
 </ng-template>
 
 <!-- Modal d'ajout pour tous les coworkers -->
 <ng-template #addForAllModal let-modal>
-    <div class="modal-header">
-        <h5 class="modal-title">Ajouter un abonnement pour tous les coworkers</h5>
-        <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
-    </div>
-    <div class="modal-body">
-        <form (ngSubmit)="saveAbonnementForAll()">
-            <div class="mb-3">
-                <label class="form-label">Espace ouvert</label>
-                <select class="form-select" [(ngModel)]="currentAbonnement.espaceOuvertId" name="espaceId" required>
-                    <option value="0" disabled selected>Sélectionnez un espace</option>
-                    <option *ngFor="let espace of espacesOuverts" [value]="espace.id">
-                        {{ espace.name }}
-                    </option>
-                </select>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Type d'abonnement</label>
-                <select class="form-select" [(ngModel)]="currentAbonnement.type" name="type" 
-                        (change)="calculateEndDate()" required>
-                    <option value="MENSUEL">Mensuel</option>
-                    <option value="ANNUEL">Annuel</option>
-                </select>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Prix</label>
-                <div class="input-group">
-                    <input type="number" class="form-control" [(ngModel)]="currentAbonnement.prix" 
-                           name="prix" min="0" step="0.01" required>
-                    <span class="input-group-text">TND</span>
-                </div>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Date de début</label>
-                <input type="date" class="form-control" [(ngModel)]="currentAbonnement.dateDebut" 
-                       name="dateDebut" (change)="calculateEndDate()" required>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Date de fin</label>
-                <input type="date" class="form-control" [(ngModel)]="currentAbonnement.dateFin" 
-                       name="dateFin" readonly>
-            </div>
-            
-            <div class="alert alert-info">
-                Cette action créera un abonnement pour tous les coworkers existants.
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" (click)="modalRef?.hide()">
-            Annuler
+  <div class="modal-header">
+    <h5 class="modal-title">Ajouter un abonnement pour tous les coworkers</h5>
+    <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
+  </div>
+  <div class="modal-body">
+    <form (ngSubmit)="saveAbonnementForAll()">
+      <div class="mb-3">
+        <label class="form-label">Espace ouvert</label>
+        <select
+          class="form-select"
+          [(ngModel)]="currentAbonnement.espaceOuvertId"
+          name="espaceId"
+          required
+        >
+          <option value="0" disabled selected>Sélectionnez un espace</option>
+          <option *ngFor="let espace of espacesOuverts" [value]="espace.id">
+            {{ espace.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Type d'abonnement</label>
+        <select
+          class="form-select"
+          [(ngModel)]="currentAbonnement.type"
+          name="type"
+          (change)="calculateEndDate()"
+          required
+        >
+          <option value="MENSUEL">Mensuel</option>
+          <option value="ANNUEL">Annuel</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Prix</label>
+        <div class="input-group">
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="currentAbonnement.prix"
+            name="prix"
+            min="0"
+            step="0.01"
+            required
+          />
+          <span class="input-group-text">TND</span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Date de début</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="currentAbonnement.dateDebut"
+          name="dateDebut"
+          (change)="calculateEndDate()"
+          required
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Date de fin</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="currentAbonnement.dateFin"
+          name="dateFin"
+          readonly
+        />
+      </div>
+
+      <div class="alert alert-info">
+        Cette action créera un abonnement pour tous les coworkers existants.
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="modalRef?.hide()"
+        >
+          Annuler
         </button>
-                <button type="submit" class="btn btn-success">
-                    <i class="bi bi-people-fill me-1"></i> Créer pour tous
-                </button>
-            </div>
-        </form>
-    </div>
+        <button type="submit" class="btn btn-success">
+          <i class="bi bi-people-fill me-1"></i> Créer pour tous
+        </button>
+      </div>
+    </form>
+  </div>
 </ng-template>
 
 <!-- Modal de modification -->
 <ng-template #editModal let-modal>
-    <div class="modal-header">
-        <h5 class="modal-title">Modifier l'abonnement</h5>
-        <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
-    </div>
-    <div class="modal-body">
-        <form (ngSubmit)="saveAbonnement()">
-            <div class="mb-3">
-                <label class="form-label">Utilisateur</label>
-                <select class="form-select" [(ngModel)]="currentAbonnement.userId" name="userId" required>
-                    <option *ngFor="let user of users" [value]="user.id" [selected]="user.id === currentAbonnement.userId">
-                        {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
-                    </option>
-                </select>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Espace ouvert</label>
-                <select class="form-select" [(ngModel)]="currentAbonnement.espaceOuvertId" name="espaceId" required>
-                    <option *ngFor="let espace of espacesOuverts" [value]="espace.id" [selected]="espace.id === currentAbonnement.espaceOuvertId">
-                        {{ espace.name }}
-                    </option>
-                </select>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Type d'abonnement</label>
-                <select class="form-select" [(ngModel)]="currentAbonnement.type" name="type" 
-                        (change)="calculateEndDate()" required>
-                    <option value="MENSUEL" [selected]="currentAbonnement.type === 'MENSUEL'">Mensuel</option>
-                    <option value="ANNUEL" [selected]="currentAbonnement.type === 'ANNUEL'">Annuel</option>
-                </select>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Prix</label>
-                <div class="input-group">
-                    <input type="number" class="form-control" [(ngModel)]="currentAbonnement.prix" 
-                           name="prix" min="0" step="0.01" required>
-                    <span class="input-group-text">TND</span>
-                </div>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Date de début</label>
-                <input type="date" class="form-control" [(ngModel)]="currentAbonnement.dateDebut" 
-                       name="dateDebut" (change)="calculateEndDate()" required>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">Date de fin</label>
-                <input type="date" class="form-control" [(ngModel)]="currentAbonnement.dateFin" 
-                       name="dateFin" readonly>
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" (click)="modalRef?.hide()">
-            Annuler
+  <div class="modal-header">
+    <h5 class="modal-title">Modifier l'abonnement</h5>
+    <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
+  </div>
+  <div class="modal-body">
+    <form (ngSubmit)="saveAbonnement()">
+      <div class="mb-3">
+        <label class="form-label">Utilisateur</label>
+        <select
+          class="form-select"
+          [(ngModel)]="currentAbonnement.userId"
+          name="userId"
+          required
+        >
+          <option
+            *ngFor="let user of users"
+            [value]="user.id"
+            [selected]="user.id === currentAbonnement.userId"
+          >
+            {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Espace ouvert</label>
+        <select
+          class="form-select"
+          [(ngModel)]="currentAbonnement.espaceOuvertId"
+          name="espaceId"
+          required
+        >
+          <option
+            *ngFor="let espace of espacesOuverts"
+            [value]="espace.id"
+            [selected]="espace.id === currentAbonnement.espaceOuvertId"
+          >
+            {{ espace.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Type d'abonnement</label>
+        <select
+          class="form-select"
+          [(ngModel)]="currentAbonnement.type"
+          name="type"
+          (change)="calculateEndDate()"
+          required
+        >
+          <option
+            value="MENSUEL"
+            [selected]="currentAbonnement.type === 'MENSUEL'"
+          >
+            Mensuel
+          </option>
+          <option
+            value="ANNUEL"
+            [selected]="currentAbonnement.type === 'ANNUEL'"
+          >
+            Annuel
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Prix</label>
+        <div class="input-group">
+          <input
+            type="number"
+            class="form-control"
+            [(ngModel)]="currentAbonnement.prix"
+            name="prix"
+            min="0"
+            step="0.01"
+            required
+          />
+          <span class="input-group-text">TND</span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Date de début</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="currentAbonnement.dateDebut"
+          name="dateDebut"
+          (change)="calculateEndDate()"
+          required
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Date de fin</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="currentAbonnement.dateFin"
+          name="dateFin"
+          readonly
+        />
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="modalRef?.hide()"
+        >
+          Annuler
         </button>
-                <button type="submit" class="btn btn-primary">
-                    Modifier
-                </button>
-            </div>
-        </form>
-    </div>
+        <button type="submit" class="btn btn-primary">Modifier</button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+
+<!-- Modal de confirmation de suppression -->
+<ng-template #deleteConfirmationModal>
+  <div class="modal-header">
+    <h5 class="modal-title">Confirmer la suppression</h5>
+    <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
+  </div>
+  <div class="modal-body">
+    <p>
+      Êtes-vous sûr de vouloir supprimer cet abonnement ? Cette action est
+      irréversible.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modalRef?.hide()"
+    >
+      Annuler
+    </button>
+    <button type="button" class="btn btn-danger" (click)="confirmDelete()">
+      Supprimer
+    </button>
+  </div>
 </ng-template>

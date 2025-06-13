@@ -5,10 +5,14 @@
     </a>
   </div>
 
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+  <div
+    class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4"
+  >
     <div class="mb-3 mb-md-0">
       <h1 class="h2 mb-2">Périodes d'indisponibilité</h1>
-      <p class="mb-0 text-muted">Gérer les périodes où les espaces sont indisponibles.</p>
+      <p class="mb-0 text-muted">
+        Gérer les périodes où les espaces sont indisponibles.
+      </p>
     </div>
     <div>
       <button class="btn btn-primary" (click)="openCreateModal(createModal)">
@@ -23,7 +27,12 @@
         <div class="col-md-6">
           <div class="input-group">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control" placeholder="Rechercher..." [(ngModel)]="searchText">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Rechercher..."
+              [(ngModel)]="searchText"
+            />
           </div>
         </div>
       </div>
@@ -35,11 +44,17 @@
         </div>
       </div>
 
-      <div *ngIf="!loading && indisponibilites.length === 0" class="text-center py-5">
+      <div
+        *ngIf="!loading && indisponibilites.length === 0"
+        class="text-center py-5"
+      >
         <p class="text-muted">Aucune période d'indisponibilité trouvée</p>
       </div>
 
-      <div *ngIf="!loading && indisponibilites.length > 0" class="table-responsive">
+      <div
+        *ngIf="!loading && indisponibilites.length > 0"
+        class="table-responsive"
+      >
         <table class="table table-hover">
           <thead class="table-light">
             <tr>
@@ -51,17 +66,27 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let indispo of indisponibilites | filter: searchText">
+            <tr
+              *ngFor="
+                let indispo of paginatedIndisponibilites | filter : searchText
+              "
+            >
               <td>{{ getEspaceName(indispo.espaceId) }}</td>
-              <td>{{ indispo.dateDebut | date:'medium' }}</td>
-              <td>{{ indispo.dateFin | date:'medium' }}</td>
+              <td>{{ indispo.dateDebut | date : "medium" }}</td>
+              <td>{{ indispo.dateFin | date : "medium" }}</td>
               <td>{{ indispo.raison }}</td>
               <td class="text-end">
                 <div class="btn-group" role="group">
-                  <button class="btn btn-sm btn-outline-primary" (click)="openEditModal(editModal, indispo)">
+                  <button
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="openEditModal(editModal, indispo)"
+                  >
                     <i class="bi bi-pencil"></i>
                   </button>
-                  <button class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(deleteModal, indispo)">
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="openDeleteModal(deleteModal, indispo)"
+                  >
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
@@ -69,6 +94,70 @@
             </tr>
           </tbody>
         </table>
+      </div>
+      <!-- Après la fermeture de la table (avant le </div> final du card-body) -->
+      <div
+        *ngIf="indisponibilites.length > 0"
+        class="d-flex justify-content-between align-items-center mt-3"
+      >
+        <div class="text-muted">
+          Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à
+          {{ getMin(currentPage * itemsPerPage, totalItems) }} sur
+          {{ totalItems }} indisponibilités
+        </div>
+
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [(page)]="currentPage"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="pageChanged($event)"
+          class="pagination-sm"
+        ></ngb-pagination>
+
+        <div class="dropdown">
+          <button
+            class="btn btn-outline-secondary btn-sm dropdown-toggle"
+            type="button"
+            id="itemsPerPageDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            {{ itemsPerPage }} par page
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="itemsPerPageDropdown">
+            <li>
+              <a
+                class="dropdown-item"
+                (click)="itemsPerPage = 5; currentPage = 1"
+                >5 par page</a
+              >
+            </li>
+            <li>
+              <a
+                class="dropdown-item"
+                (click)="itemsPerPage = 10; currentPage = 1"
+                >10 par page</a
+              >
+            </li>
+            <li>
+              <a
+                class="dropdown-item"
+                (click)="itemsPerPage = 20; currentPage = 1"
+                >20 par page</a
+              >
+            </li>
+            <li>
+              <a
+                class="dropdown-item"
+                (click)="itemsPerPage = 50; currentPage = 1"
+                >50 par page</a
+              >
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -86,28 +175,51 @@
         <label for="espaceId" class="form-label">Espace</label>
         <select class="form-select" id="espaceId" formControlName="espaceId">
           <option value="">Sélectionner un espace</option>
-          <option *ngFor="let espace of espaces" [value]="espace.id">{{ espace.name }}</option>
+          <option *ngFor="let espace of espaces" [value]="espace.id">
+            {{ espace.name }}
+          </option>
         </select>
       </div>
-      
+
       <div class="row mb-3">
         <div class="col-md-6">
           <label for="dateDebut" class="form-label">Date de début</label>
-          <input type="datetime-local" class="form-control" id="dateDebut" formControlName="dateDebut">
+          <input
+            type="datetime-local"
+            class="form-control"
+            id="dateDebut"
+            formControlName="dateDebut"
+          />
         </div>
         <div class="col-md-6">
           <label for="dateFin" class="form-label">Date de fin</label>
-          <input type="datetime-local" class="form-control" id="dateFin" formControlName="dateFin">
+          <input
+            type="datetime-local"
+            class="form-control"
+            id="dateFin"
+            formControlName="dateFin"
+          />
         </div>
       </div>
-      
+
       <div class="mb-3">
         <label for="raison" class="form-label">Raison</label>
-        <textarea class="form-control" id="raison" rows="3" formControlName="raison"></textarea>
+        <textarea
+          class="form-control"
+          id="raison"
+          rows="3"
+          formControlName="raison"
+        ></textarea>
       </div>
-      
+
       <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-outline-secondary me-2" (click)="modal.dismiss()">Annuler</button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary me-2"
+          (click)="modal.dismiss()"
+        >
+          Annuler
+        </button>
         <button type="submit" class="btn btn-primary">Enregistrer</button>
       </div>
     </form>
@@ -125,28 +237,51 @@
         <label for="espaceId" class="form-label">Espace</label>
         <select class="form-select" id="espaceId" formControlName="espaceId">
           <option value="">Sélectionner un espace</option>
-          <option *ngFor="let espace of espaces" [value]="espace.id">{{ espace.name }}</option>
+          <option *ngFor="let espace of espaces" [value]="espace.id">
+            {{ espace.name }}
+          </option>
         </select>
       </div>
-      
+
       <div class="row mb-3">
         <div class="col-md-6">
           <label for="dateDebut" class="form-label">Date de début</label>
-          <input type="datetime-local" class="form-control" id="dateDebut" formControlName="dateDebut">
+          <input
+            type="datetime-local"
+            class="form-control"
+            id="dateDebut"
+            formControlName="dateDebut"
+          />
         </div>
         <div class="col-md-6">
           <label for="dateFin" class="form-label">Date de fin</label>
-          <input type="datetime-local" class="form-control" id="dateFin" formControlName="dateFin">
+          <input
+            type="datetime-local"
+            class="form-control"
+            id="dateFin"
+            formControlName="dateFin"
+          />
         </div>
       </div>
-      
+
       <div class="mb-3">
         <label for="raison" class="form-label">Raison</label>
-        <textarea class="form-control" id="raison" rows="3" formControlName="raison"></textarea>
+        <textarea
+          class="form-control"
+          id="raison"
+          rows="3"
+          formControlName="raison"
+        ></textarea>
       </div>
-      
+
       <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-outline-secondary me-2" (click)="modal.dismiss()">Annuler</button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary me-2"
+          (click)="modal.dismiss()"
+        >
+          Annuler
+        </button>
         <button type="submit" class="btn btn-primary">Mettre à jour</button>
       </div>
     </form>
@@ -154,32 +289,32 @@
 </ng-template>
 
 <!-- Modal : Confirmation de suppression -->
-    <ng-template #deleteModal let-modal>
-      <div class="modal-header">
-        <h5 class="modal-title">Confirmer la suppression</h5>
-        <button
-          type="button"
-          class="btn-close"
-          (click)="modal.dismiss()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p>
-          Êtes-vous sûr de vouloir supprimer cette période d'indisponibilité de l'espace  "{{
-            currentIndisponibilite?.espaceName
-          }}" ? Cette action est irréversible.
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          (click)="modal.dismiss()"
-        >
-          Annuler
-        </button>
-        <button type="button" class="btn btn-danger" (click)="deleteIndisponibilite()">
-          Supprimer
-        </button>
-      </div>
-    </ng-template>
+<ng-template #deleteModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Confirmer la suppression</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p>
+      Êtes-vous sûr de vouloir supprimer cette période d'indisponibilité de
+      l'espace "{{ currentIndisponibilite?.espaceName }}" ? Cette action est
+      irréversible.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss()"
+    >
+      Annuler
+    </button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="deleteIndisponibilite()"
+    >
+      Supprimer
+    </button>
+  </div>
+</ng-template>

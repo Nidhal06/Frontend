@@ -10,9 +10,7 @@
         (click)="modal.dismiss()"
       ></button>
     </div>
-    <div class="modal-body">
-      Êtes-vous sûr de vouloir supprimer cet avis ?
-    </div>
+    <div class="modal-body">Êtes-vous sûr de vouloir supprimer cet avis ?</div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
         Non
@@ -35,7 +33,9 @@
   </div>
 
   <!-- En-tête -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+  <div
+    class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4"
+  >
     <div class="mb-3 mb-md-0">
       <h1 class="h2 mb-2">Mes avis</h1>
       <p class="mb-0 text-muted">
@@ -77,10 +77,12 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let avis of avisList">
-                <td><strong>{{ avis.espaceName }}</strong></td>
+              <tr *ngFor="let avis of paginatedAvis">
                 <td>
-                  <ng-container *ngFor="let star of [1,2,3,4,5]">
+                  <strong>{{ avis.espaceName }}</strong>
+                </td>
+                <td>
+                  <ng-container *ngFor="let star of [1, 2, 3, 4, 5]">
                     <i
                       class="bi"
                       [ngClass]="{
@@ -91,8 +93,8 @@
                   </ng-container>
                   <span class="ms-1">({{ avis.rating }}/5)</span>
                 </td>
-                <td>{{ avis.commentaire || 'Aucun commentaire fourni.' }}</td>
-                <td>{{ avis.date | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ avis.commentaire || "Aucun commentaire fourni." }}</td>
+                <td>{{ avis.date | date : "dd/MM/yyyy" }}</td>
                 <td>
                   <button
                     class="btn btn-outline-danger btn-sm"
@@ -104,6 +106,69 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        <div
+          *ngIf="avisList.length > 0"
+          class="d-flex justify-content-between align-items-center mt-3"
+        >
+          <div class="text-muted">
+            Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à
+            {{ min(currentPage * itemsPerPage, totalItems) }} sur
+            {{ totalItems }} avis
+          </div>
+
+          <ngb-pagination
+            [collectionSize]="totalItems"
+            [(page)]="currentPage"
+            [pageSize]="itemsPerPage"
+            [maxSize]="5"
+            [rotate]="true"
+            [boundaryLinks]="true"
+            (pageChange)="pageChanged($event)"
+            class="pagination-sm"
+          ></ngb-pagination>
+
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-secondary btn-sm dropdown-toggle"
+              type="button"
+              id="itemsPerPageDropdown"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              {{ itemsPerPage }} par page
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="itemsPerPageDropdown">
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 5; currentPage = 1"
+                  >5 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 10; currentPage = 1"
+                  >10 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 20; currentPage = 1"
+                  >20 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 50; currentPage = 1"
+                  >50 par page</a
+                >
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

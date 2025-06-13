@@ -14,23 +14,38 @@ interface ManagementMenu {
   onClick: () => void;
 }
 
+/**
+ * Composant Dashboard pour les coworkers
+ * Fournit une interface de gestion des espaces, réservations et événements
+ */
 @Component({
   selector: 'app-coworker-dashboard',
   templateUrl: './coworker-dashboard.component.html',
   styleUrls: ['./coworker-dashboard.component.css']
 })
 export class CoworkerDashboardComponent implements OnInit, OnDestroy {
+  // =============================================
+  // SECTION: PROPRIÉTÉS DU COMPOSANT
+  // =============================================
+
+  // État de l'interface
   isOpen = false;
-  isLoggedIn = false;
-  profileImagePath: string = '';
-  environment = environment;
-  username = '';
   scrolled = false;
   activeTab = 'overview';
-  users: UserDTO[] = [];
   isLoading = true;
-  private profileUpdateSubscription!: Subscription;
-
+  
+  // Authentification
+  isLoggedIn = false;
+  username = '';
+  profileImagePath: string = '';
+  
+  // Configuration
+  environment = environment;
+  
+  // Données
+  users: UserDTO[] = [];
+  
+  // Menu de navigation
   managementMenus: ManagementMenu[] = [
     {
       title: 'Trouver un espace',
@@ -51,13 +66,27 @@ export class CoworkerDashboardComponent implements OnInit, OnDestroy {
       onClick: () => this.router.navigate(['/coworker-dashboard/my-bookings'])
     },
     {
-    title: 'Mes avis',
-    icon: 'bi-chat-dots-fill', 
-    description: 'Consultez vos avis soumis pour les espaces privés',
-    onClick: () => this.router.navigate(['/coworker-dashboard/my-feedbacks'])
-  },
+      title: 'Mes avis',
+      icon: 'bi-chat-dots-fill', 
+      description: 'Consultez vos avis soumis pour les espaces privés',
+      onClick: () => this.router.navigate(['/coworker-dashboard/my-feedbacks'])
+    },
   ];
 
+  // Abonnements
+  private profileUpdateSubscription!: Subscription;
+
+  // =============================================
+  // SECTION: INITIALISATION
+  // =============================================
+
+  /**
+   * Constructeur du composant
+   * @param router Service de navigation
+   * @param userService Service de gestion des utilisateurs
+   * @param authService Service d'authentification
+   * @param toastr Service de notifications
+   */
   constructor(
     public router: Router,
     private userService: UserService,
@@ -65,25 +94,56 @@ export class CoworkerDashboardComponent implements OnInit, OnDestroy {
     private toastr: ToastrService
   ) {}
 
+  /**
+   * Initialisation du composant
+   */
   ngOnInit(): void {
     this.checkAuthStatus();
   }
 
+  /**
+   * Nettoyage lors de la destruction du composant
+   */
   ngOnDestroy(): void {
     if (this.profileUpdateSubscription) {
       this.profileUpdateSubscription.unsubscribe();
     }
   }
 
+  // =============================================
+  // SECTION: GESTION DE L'INTERFACE
+  // =============================================
+
+  /**
+   * Basculer l'état du menu
+   */
   toggleMenu(): void {
     this.isOpen = !this.isOpen;
   }
 
+  /**
+   * Écouteur d'événement de scroll
+   */
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
     this.scrolled = window.scrollY > 50;
   }
 
+  /**
+   * Change l'onglet actif
+   * @param tab Le nom de l'onglet à activer
+   */
+  changeTab(tab: string): void {
+    this.activeTab = tab;
+  }
+
+  // =============================================
+  // SECTION: GESTION DE L'AUTHENTIFICATION
+  // =============================================
+
+  /**
+   * Vérifie l'état d'authentification
+   */
   checkAuthStatus(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
     if (this.isLoggedIn) {
@@ -91,6 +151,9 @@ export class CoworkerDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Charge les informations de l'utilisateur courant
+   */
   loadCurrentUser(): void {
     const currentUser = this.authService.currentUserValue;
     if (currentUser && currentUser.userId) {
@@ -106,6 +169,9 @@ export class CoworkerDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Gère la déconnexion de l'utilisateur
+   */
   handleLogout(): void {
     this.authService.logout();
     this.isLoggedIn = false;
@@ -113,10 +179,15 @@ export class CoworkerDashboardComponent implements OnInit, OnDestroy {
     this.toastr.success('Déconnexion réussie', 'Succès');
   }
 
-  changeTab(tab: string): void {
-    this.activeTab = tab;
-  }
+  // =============================================
+  // SECTION: MÉTHODES UTILITAIRES
+  // =============================================
 
+  /**
+   * Retourne l'icône correspondant à une tendance
+   * @param trend La tendance ('up', 'down' ou 'neutral')
+   * @returns Le nom de l'icône Material
+   */
   getTrendIcon(trend: 'up' | 'down' | 'neutral'): string {
     switch (trend) {
       case 'up': return 'trending_up';
@@ -125,6 +196,11 @@ export class CoworkerDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Retourne la classe CSS correspondant à une tendance
+   * @param trend La tendance ('up', 'down' ou 'neutral')
+   * @returns La classe CSS pour le style de couleur
+   */
   getTrendColor(trend: 'up' | 'down' | 'neutral'): string {
     switch (trend) {
       case 'up': return 'text-success';

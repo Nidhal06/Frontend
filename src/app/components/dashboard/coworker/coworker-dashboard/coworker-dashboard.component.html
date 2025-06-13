@@ -101,28 +101,26 @@
 
       <!-- Contenu principal -->
       <!-- Section de gestion -->
-<div *ngIf="activeTab === 'overview'">
-  <div class="row g-4 mb-4">
-    <div *ngFor="let menu of managementMenus" class="col-md-6 col-lg-6">
-      <div
-  class="card shadow-sm h-100 cursor-pointer management-card"
-  (click)="menu.onClick()"
->
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="mb-0">{{ menu.title }}</h5>
-      <i class="bi {{ menu.icon }} text-primary fs-4"></i>
+      <div *ngIf="activeTab === 'overview'">
+        <div class="row g-4 mb-4">
+          <div *ngFor="let menu of managementMenus" class="col-md-6 col-lg-6">
+            <div
+              class="card shadow-sm h-100 cursor-pointer management-card"
+              (click)="menu.onClick()"
+            >
+              <div class="card-body">
+                <div
+                  class="d-flex justify-content-between align-items-center mb-3"
+                >
+                  <h5 class="mb-0">{{ menu.title }}</h5>
+                  <i class="bi {{ menu.icon }} text-primary fs-4"></i>
+                </div>
+                <p class="text-muted small mb-0">{{ menu.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <p class="text-muted small mb-0">{{ menu.description }}</p>
   </div>
 </div>
-
-    </div>
-  </div>
-</div>
-
-    </div>
-  </div>
-</div>
-
-

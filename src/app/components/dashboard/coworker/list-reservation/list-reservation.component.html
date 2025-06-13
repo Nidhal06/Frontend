@@ -1,4 +1,3 @@
-
 <div class="container-fluid py-4">
   <ng-template #cancelModal let-modal>
     <div class="modal-header">
@@ -80,7 +79,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let reservation of reservations">
+              <tr *ngFor="let reservation of paginatedReservations">
                 <td>
                   <strong>{{ reservation.espaceName }}</strong>
                 </td>
@@ -116,16 +115,16 @@
                   </span>
                 </td>
                 <td>
-    <span
-      class="badge"
-      [ngClass]="{
-        'bg-success': reservation.paiementValide,
-        'bg-danger': !reservation.paiementValide
-      }"
-    >
-      {{ reservation.paiementValide ? 'Payé' : 'Non payé' }}
-    </span>
-  </td>
+                  <span
+                    class="badge"
+                    [ngClass]="{
+                      'bg-success': reservation.paiementValide,
+                      'bg-danger': !reservation.paiementValide
+                    }"
+                  >
+                    {{ reservation.paiementValide ? "Payé" : "Non payé" }}
+                  </span>
+                </td>
                 <td>
                   <button
                     *ngIf="
@@ -141,6 +140,68 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        <div
+          *ngIf="reservations.length > 0"
+          class="d-flex justify-content-between align-items-center mt-3"
+        >
+          <div class="text-muted">
+            Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à
+            {{ getDisplayedEnd() }} sur {{ totalItems }} réservations
+          </div>
+
+          <ngb-pagination
+            [collectionSize]="totalItems"
+            [(page)]="currentPage"
+            [pageSize]="itemsPerPage"
+            [maxSize]="5"
+            [rotate]="true"
+            [boundaryLinks]="true"
+            (pageChange)="pageChanged($event)"
+            class="pagination-sm"
+          ></ngb-pagination>
+
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-secondary btn-sm dropdown-toggle"
+              type="button"
+              id="itemsPerPageDropdown"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              {{ itemsPerPage }} par page
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="itemsPerPageDropdown">
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 5; currentPage = 1"
+                  >5 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 10; currentPage = 1"
+                  >10 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 20; currentPage = 1"
+                  >20 par page</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  (click)="itemsPerPage = 50; currentPage = 1"
+                  >50 par page</a
+                >
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

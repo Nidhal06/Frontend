@@ -128,7 +128,7 @@ export interface EvenementDTO {
   endDate: string;
   price: number;
   maxParticipants: number;
-  isActive: boolean;
+  isActive: Boolean;
   participants: ParticipantDTO[];
   participantsIds?: number[]; 
   espaceId: number;

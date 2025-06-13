@@ -1,4 +1,3 @@
-
 <div class="container-fluid py-4">
   <div class="mb-3">
     <a routerLink="/admin-dashboard" class="btn btn-outline-secondary">
@@ -6,10 +5,14 @@
     </a>
   </div>
 
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+  <div
+    class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4"
+  >
     <div class="mb-3 mb-md-0">
       <h1 class="h2 mb-2">Gestion des espaces</h1>
-      <p class="mb-0 text-muted">Gérez tous les espaces de coworking disponibles.</p>
+      <p class="mb-0 text-muted">
+        Gérez tous les espaces de coworking disponibles.
+      </p>
     </div>
 
     <div>
@@ -66,7 +69,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let espace of filteredEspaces">
+                <tr *ngFor="let espace of paginatedEspaces">
                   <td>
                     <div class="space-photo-container">
                       <img
@@ -75,7 +78,10 @@
                         class="img-thumbnail space-photo"
                         alt="Photo de l'espace {{ espace.name }}"
                       />
-                      <div *ngIf="!espace.photoPrincipal" class="no-photo-placeholder">
+                      <div
+                        *ngIf="!espace.photoPrincipal"
+                        class="no-photo-placeholder"
+                      >
                         <i class="bi bi-image"></i>
                       </div>
                     </div>
@@ -83,14 +89,20 @@
                   <td class="fw-semibold">{{ espace.name }}</td>
                   <td>{{ espace.description | truncate : 50 }}</td>
                   <td>
-                    <span class="badge rounded-pill" [ngClass]="getTypeBadgeClass(espace.type)">
+                    <span
+                      class="badge rounded-pill"
+                      [ngClass]="getTypeBadgeClass(espace.type)"
+                    >
                       {{ getTypeText(espace.type) }}
                     </span>
                   </td>
                   <td>{{ espace.capacity }} personnes</td>
                   <td>{{ getPrixParJour(espace) }}</td>
                   <td>
-                    <span class="badge rounded-pill" [ngClass]="getStatusBadgeClass(espace.isActive)">
+                    <span
+                      class="badge rounded-pill"
+                      [ngClass]="getStatusBadgeClass(espace.isActive)"
+                    >
                       {{ getStatusText(espace.isActive) }}
                     </span>
                   </td>
@@ -103,11 +115,13 @@
                         <i class="bi bi-pencil"></i>
                       </button>
                       <button
-  class="btn btn-sm btn-outline-danger"
-  (click)="openDeleteConfirmation(deleteSpaceModal, espace)"
->
-  <i class="bi bi-trash"></i>
-</button>
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="
+                          openDeleteConfirmation(espace)
+                        "
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
                       <button
                         class="btn btn-sm"
                         [ngClass]="
@@ -129,6 +143,66 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          <!-- Après la fermeture de la table (avant le </ng-template> final) -->
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="text-muted">
+              Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à
+              {{ pageEndIndex }} sur {{ totalItems }} espaces
+            </div>
+
+            <ngb-pagination
+              [collectionSize]="totalItems"
+              [(page)]="currentPage"
+              [pageSize]="itemsPerPage"
+              [maxSize]="5"
+              [rotate]="true"
+              [boundaryLinks]="true"
+              (pageChange)="pageChanged($event)"
+              class="pagination-sm"
+            ></ngb-pagination>
+
+            <div class="dropdown">
+              <button
+                class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                type="button"
+                id="itemsPerPageDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                {{ itemsPerPage }} par page
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="itemsPerPageDropdown">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    (click)="itemsPerPage = 5; currentPage = 1"
+                    >5 par page</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    (click)="itemsPerPage = 10; currentPage = 1"
+                    >10 par page</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    (click)="itemsPerPage = 20; currentPage = 1"
+                    >20 par page</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    (click)="itemsPerPage = 50; currentPage = 1"
+                    >50 par page</a
+                  >
+                </li>
+              </ul>
+            </div>
           </div>
         </ng-template>
       </ng-template>
@@ -205,19 +279,19 @@
         </div>
         <div class="col-md-6 mb-3">
           <label for="type" class="form-label">Type *</label>
-          <select
-            class="form-select"
-            id="type"
-            formControlName="type"
-          >
-            <option *ngFor="let type of espaceTypes" [value]="type.value">{{type.display}}</option>
+          <select class="form-select" id="type" formControlName="type">
+            <option *ngFor="let type of espaceTypes" [value]="type.value">
+              {{ type.display }}
+            </option>
           </select>
         </div>
       </div>
 
       <div *ngIf="espaceForm.get('type')?.value === 'PRIVE'">
         <div class="mb-3">
-          <label for="prixParJour" class="form-label">Prix par jour (TND)</label>
+          <label for="prixParJour" class="form-label"
+            >Prix par jour (TND)</label
+          >
           <input
             type="number"
             class="form-control"
@@ -243,7 +317,9 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Photo principale <span class="text-danger">*</span></label>
+        <label class="form-label"
+          >Photo principale <span class="text-danger">*</span></label
+        >
         <input
           type="file"
           class="form-control"
@@ -251,11 +327,13 @@
           (change)="onMainPhotoSelected($event)"
           required
         />
-        <small class="text-muted">Téléchargez la photo principale de l'espace (requise)</small>
+        <small class="text-muted"
+          >Téléchargez la photo principale de l'espace (requise)</small
+        >
 
         <div *ngIf="mainPhotoPreview" class="mt-2">
-          <img 
-            [src]="mainPhotoPreview" 
+          <img
+            [src]="mainPhotoPreview"
             class="img-thumbnail main-photo-preview"
             alt="Aperçu de la photo principale"
           />
@@ -271,14 +349,19 @@
           accept="image/*"
           (change)="onGallerySelected($event)"
         />
-        <small class="text-muted">Ajoutez des images supplémentaires pour la galerie</small>
+        <small class="text-muted"
+          >Ajoutez des images supplémentaires pour la galerie</small
+        >
 
         <div class="row mt-2">
-          <div *ngFor="let img of previewImages; let i = index" class="col-md-3 col-6 position-relative mb-3">
-            <img 
-              [src]="img" 
+          <div
+            *ngFor="let img of previewImages; let i = index"
+            class="col-md-3 col-6 position-relative mb-3"
+          >
+            <img
+              [src]="img"
               class="img-thumbnail gallery-image"
-              alt="Image de galerie {{i + 1}}"
+              alt="Image de galerie {{ i + 1 }}"
             />
             <button
               type="button"
@@ -303,7 +386,11 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss()"
+    >
       Annuler
     </button>
     <button
@@ -312,7 +399,12 @@
       (click)="addEspace()"
       [disabled]="isUploading || espaceForm.invalid || !mainPhoto"
     >
-      <span *ngIf="isUploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      <span
+        *ngIf="isUploading"
+        class="spinner-border spinner-border-sm"
+        role="status"
+        aria-hidden="true"
+      ></span>
       {{ isUploading ? "En cours..." : "Ajouter" }}
     </button>
   </div>
@@ -338,7 +430,10 @@
               editForm.get('name')?.invalid && editForm.get('name')?.touched
           }"
         />
-        <div *ngIf="editForm.get('name')?.invalid && editForm.get('name')?.touched" class="invalid-feedback">
+        <div
+          *ngIf="editForm.get('name')?.invalid && editForm.get('name')?.touched"
+          class="invalid-feedback"
+        >
           Veuillez entrer un nom pour l'espace
         </div>
       </div>
@@ -365,7 +460,13 @@
                 editForm.get('capacity')?.touched
             }"
           />
-          <div *ngIf="editForm.get('capacity')?.invalid && editForm.get('capacity')?.touched" class="invalid-feedback">
+          <div
+            *ngIf="
+              editForm.get('capacity')?.invalid &&
+              editForm.get('capacity')?.touched
+            "
+            class="invalid-feedback"
+          >
             <div *ngIf="editForm.get('capacity')?.errors?.['required']">
               Veuillez entrer une capacité
             </div>
@@ -376,39 +477,39 @@
         </div>
         <div class="col-md-6 mb-3">
           <label for="editType" class="form-label">Type *</label>
-          <select
-            class="form-select"
-            id="editType"
-            formControlName="type"
-          >
-            <option *ngFor="let type of espaceTypes" [value]="type.value">{{type.display}}</option>
+          <select class="form-select" id="editType" formControlName="type">
+            <option *ngFor="let type of espaceTypes" [value]="type.value">
+              {{ type.display }}
+            </option>
           </select>
         </div>
       </div>
 
       <div *ngIf="editForm.get('type')?.value === 'PRIVE'">
-  <div class="mb-3">
-    <label for="editPrixParJour" class="form-label">Prix par jour (TND)</label>
-    <input
-      type="number"
-      class="form-control"
-      id="editPrixParJour"
-      formControlName="prixParJour"
-      step="0.01"
-      [value]="editForm.get('prixParJour')?.value"
-    />
-  </div>
-  <div class="mb-3">
-    <label class="form-label">Équipements</label>
-    <input
-      type="text"
-      class="form-control"
-      placeholder="Wifi, Projecteur, Cafetière"
-      formControlName="amenities"
-      [value]="editForm.get('amenities')?.value"
-    />
-  </div>
-</div>
+        <div class="mb-3">
+          <label for="editPrixParJour" class="form-label"
+            >Prix par jour (TND)</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            id="editPrixParJour"
+            formControlName="prixParJour"
+            step="0.01"
+            [value]="editForm.get('prixParJour')?.value"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Équipements</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Wifi, Projecteur, Cafetière"
+            formControlName="amenities"
+            [value]="editForm.get('amenities')?.value"
+          />
+        </div>
+      </div>
 
       <div class="mb-3">
         <label class="form-label">Photo principale</label>
@@ -418,21 +519,30 @@
           accept="image/*"
           (change)="onMainPhotoSelected($event)"
         />
-        <small class="text-muted">Téléchargez une nouvelle photo principale</small>
+        <small class="text-muted"
+          >Téléchargez une nouvelle photo principale</small
+        >
 
         <div *ngIf="mainPhotoPreview" class="mt-2">
-          <img 
-            [src]="mainPhotoPreview" 
+          <img
+            [src]="mainPhotoPreview"
             class="img-thumbnail main-photo-preview"
             alt="Nouvelle photo principale"
           />
-          <button type="button" class="btn btn-danger btn-sm ms-2" (click)="removeMainPhoto()">
+          <button
+            type="button"
+            class="btn btn-danger btn-sm ms-2"
+            (click)="removeMainPhoto()"
+          >
             <i class="bi bi-trash"></i>
           </button>
         </div>
-        <div *ngIf="!mainPhotoPreview && currentEspace?.photoPrincipal" class="mt-2">
-          <img 
-            [src]="currentEspace?.photoPrincipal" 
+        <div
+          *ngIf="!mainPhotoPreview && currentEspace?.photoPrincipal"
+          class="mt-2"
+        >
+          <img
+            [src]="currentEspace?.photoPrincipal"
             class="img-thumbnail main-photo-preview"
             alt="Photo actuelle de l'espace"
           />
@@ -449,14 +559,19 @@
           accept="image/*"
           (change)="onGallerySelected($event)"
         />
-        <small class="text-muted">Ajoutez des images supplémentaires pour la galerie</small>
+        <small class="text-muted"
+          >Ajoutez des images supplémentaires pour la galerie</small
+        >
 
         <div class="row mt-2">
-          <div *ngFor="let img of previewImages; let i = index" class="col-md-3 col-6 position-relative mb-3">
-            <img 
-              [src]="img" 
+          <div
+            *ngFor="let img of previewImages; let i = index"
+            class="col-md-3 col-6 position-relative mb-3"
+          >
+            <img
+              [src]="img"
               class="img-thumbnail gallery-image"
-              alt="Nouvelle image de galerie {{i + 1}}"
+              alt="Nouvelle image de galerie {{ i + 1 }}"
             />
             <button
               type="button"
@@ -470,11 +585,14 @@
           <div *ngIf="currentEspace?.gallery?.length">
             <h6 class="mt-3">Galerie actuelle</h6>
             <div class="row">
-              <div *ngFor="let img of currentEspace?.gallery; let i = index" class="col-md-3 col-6 position-relative mb-3">
-                <img 
-                  [src]="img" 
+              <div
+                *ngFor="let img of currentEspace?.gallery; let i = index"
+                class="col-md-3 col-6 position-relative mb-3"
+              >
+                <img
+                  [src]="img"
                   class="img-thumbnail gallery-image"
-                  alt="Image de galerie existante {{i + 1}}"
+                  alt="Image de galerie existante {{ i + 1 }}"
                 />
                 <button
                   type="button"
@@ -501,7 +619,11 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss()">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss()"
+    >
       Annuler
     </button>
     <button
@@ -510,27 +632,27 @@
       (click)="updateEspace()"
       [disabled]="isUploading || editForm.invalid"
     >
-      <span *ngIf="isUploading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      <span
+        *ngIf="isUploading"
+        class="spinner-border spinner-border-sm"
+        role="status"
+        aria-hidden="true"
+      ></span>
       {{ isUploading ? "En cours..." : "Enregistrer" }}
     </button>
   </div>
 </ng-template>
 
- <!-- Modal : Confirmation de suppression d'espace -->
+<!-- Modal : Confirmation de suppression d'espace -->
 <ng-template #deleteSpaceModal let-modal>
   <div class="modal-header">
     <h5 class="modal-title">Confirmer la suppression</h5>
-    <button
-      type="button"
-      class="btn-close"
-      (click)="modal.dismiss()"
-    ></button>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
   </div>
   <div class="modal-body">
     <p>
-      Êtes-vous sûr de vouloir supprimer l'espace "{{
-        currentEspace?.name
-      }}" ? Cette action est irréversible.
+      Êtes-vous sûr de vouloir supprimer l'espace "{{ currentEspace?.name }}" ?
+      Cette action est irréversible.
     </p>
   </div>
   <div class="modal-footer">
@@ -541,9 +663,9 @@
     >
       Annuler
     </button>
-    <button 
-      type="button" 
-      class="btn btn-danger" 
+    <button
+      type="button"
+      class="btn btn-danger"
       (click)="performDelete(); modal.close()"
     >
       Supprimer

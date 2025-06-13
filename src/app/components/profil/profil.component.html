@@ -267,7 +267,10 @@
         </div>
       </div>
 
-      <div class="card shadow-sm mt-4" *ngIf="userProfile?.type === 'RECEPTIONISTE'">
+      <div
+        class="card shadow-sm mt-4"
+        *ngIf="userProfile?.type === 'RECEPTIONISTE'"
+      >
         <div class="card-header bg-primary text-white">
           <h5 class="mb-0">
             <i class="bi bi-shield-lock me-2"></i>Outils réceptionniste
@@ -279,7 +282,8 @@
               class="btn btn-outline-primary"
               routerLink="/receptioniste-dashboard"
             >
-              <i class="bi bi-speedometer2 me-2"></i>Tableau de bord réceptionniste
+              <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
+              réceptionniste
             </button>
           </div>
         </div>

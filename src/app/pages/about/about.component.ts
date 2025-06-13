@@ -4,15 +4,24 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/app/services/environments/environment';
 import { ToastService } from '../../services/toast.service';
 
+/**
+ * Composant About - Page "À propos" avec formulaire de contact
+ */
 @Component({
   selector: 'app-about',
   templateUrl: './about.component.html',
   styleUrls: ['./about.component.css']
 })
 export class AboutComponent {
+  // =============================================
+  // SECTION: PROPRIÉTÉS DU COMPOSANT
+  // =============================================
+
+  // Formulaire de contact
   contactForm: FormGroup;
   isSubmitting = false;
 
+  // Données de l'équipe
   team = [
     {
       name: "Nidhal Gharbi",
@@ -28,6 +37,7 @@ export class AboutComponent {
     },
   ];
 
+  // Valeurs de l'entreprise
   values = [
     {
       icon: "bi bi-people-fill",
@@ -51,11 +61,16 @@ export class AboutComponent {
     }
   ];
 
+  // =============================================
+  // SECTION: INITIALISATION
+  // =============================================
+
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private toastService: ToastService
   ) {
+    // Initialisation du formulaire avec validation
     this.contactForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -64,28 +79,56 @@ export class AboutComponent {
     });
   }
 
+  // =============================================
+  // SECTION: GESTION DU FORMULAIRE
+  // =============================================
+
+  /**
+   * Soumission du formulaire de contact
+   */
   onSubmit() {
+    // Vérification de la validité du formulaire
     if (this.contactForm.invalid) {
       return;
     }
 
     this.isSubmitting = true;
 
+    // Préparation des données à envoyer
     const formData = {
       ...this.contactForm.value,
       toEmail: 'level1hub1@gmail.com' // Email de destination
     };
 
+    // Envoi de la requête HTTP
     this.http.post(`${environment.apiUrl}/api/contact`, formData).subscribe({
       next: () => {
-        this.toastService.showSuccess('Succès', 'Votre message a été envoyé avec succès');
-        this.contactForm.reset();
-        this.isSubmitting = false;
+        this.handleSubmitSuccess();
       },
       error: (err) => {
-        this.toastService.showError('Erreur', 'Une erreur est survenue lors de l\'envoi du message');
-        this.isSubmitting = false;
+        this.handleSubmitError(err);
       }
     });
+  }
+
+  // =============================================
+  // SECTION: GESTION DES RÉPONSES
+  // =============================================
+
+  /**
+   * Gère le succès de l'envoi du formulaire
+   */
+  private handleSubmitSuccess(): void {
+    this.toastService.showSuccess('Succès', 'Votre message a été envoyé avec succès');
+    this.contactForm.reset();
+    this.isSubmitting = false;
+  }
+
+  /**
+   * Gère l'erreur lors de l'envoi du formulaire
+   */
+  private handleSubmitError(err: any): void {
+    this.toastService.showError('Erreur', 'Une erreur est survenue lors de l\'envoi du message');
+    this.isSubmitting = false;
   }
 }
